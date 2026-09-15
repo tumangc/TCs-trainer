@@ -1,5 +1,5 @@
 import { MockCoachService } from './mockCoachService';
-import { getStravaInsights, getStravaPlan, getStravaStatus, getStravaToday } from './stravaClient';
+import { getStravaInsights, getStravaPlan, getStravaProgress, getStravaStatus, getStravaToday } from './stravaClient';
 import type {
   AmendResult,
   ChatMessage,
@@ -11,6 +11,7 @@ import type {
   OnboardingGoal,
   PlanData,
   ProfileData,
+  ProgressData,
   TodayData,
 } from '../types/domain';
 
@@ -129,6 +130,15 @@ export class LiveCoachService extends MockCoachService {
       if (live.ok) return live;
     }
     return super.getPlan();
+  }
+
+  async getProgress(): Promise<ProgressData> {
+    const status = await getStravaStatus();
+    if (status.connected) {
+      const live = await getStravaProgress();
+      if (live.ok) return live;
+    }
+    return super.getProgress();
   }
 
   async getChat() {

@@ -55,7 +55,7 @@ export function ProgressScreen() {
       <div className="card elev-sm" style={{ gap: 'var(--space-3)', marginBottom: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <div className="card-kicker" style={{ margin: 0 }}>
-            Predicted half
+            Predicted {data.racePrediction.raceLabel}
           </div>
           <div className="tabular" style={{ fontSize: 11.5, color: 'var(--color-accent-300)' }}>
             {data.racePrediction.current} · goal {data.racePrediction.goal}

@@ -287,3 +287,169 @@ export function decideTodaySession({
     reason: 'Recovery between the days that matter.',
   };
 }
+
+// --- Progress screen support: race-time formatting/parsing, rolling race
+// prediction, personal bests, and weekly-sample helpers for the charts ---
+
+export function formatRaceTime(totalSeconds) {
+  const s = Math.round(totalSeconds);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}` : `${m}:${String(sec).padStart(2, '0')}`;
+}
+
+// Parses "1:29:30" or "41:59" into seconds. Returns null for anything that
+// doesn't look like a time — onboarding's goal-time field is free text.
+export function parseTimeToSeconds(text) {
+  const match = /^(\d+):(\d{2})(?::(\d{2}))?$/.exec((text || '').trim());
+  if (!match) return null;
+  const [, a, b, c] = match;
+  return c !== undefined ? Number(a) * 3600 + Number(b) * 60 + Number(c) : Number(a) * 60 + Number(b);
+}
+
+const NAMED_DISTANCES = [
+  // Half must be checked before the full-marathon pattern — "Half Marathon"
+  // contains the substring "marathon" too, and the word "half" precedes it.
+  { re: /half|\bhm\b|13\.1/i, meters: 21097.5 },
+  { re: /marathon|\bfull\b/i, meters: 42195 },
+  { re: /10\s*k/i, meters: 10000 },
+  { re: /5\s*k/i, meters: 5000 },
+];
+
+// Best-effort distance guess from free-text race/goal fields — onboarding
+// has no structured distance field, only names like "Rotterdam Half
+// Marathon" or a recent-race string like "10 km". Falls back to half
+// marathon, this app's flagship example, when nothing matches.
+export function guessRaceDistanceMeters(text) {
+  for (const { re, meters } of NAMED_DISTANCES) {
+    if (re.test(text || '')) return meters;
+  }
+  return 21097.5;
+}
+
+const DISTANCE_LABELS = [
+  { meters: 42195, label: 'marathon' },
+  { meters: 21097.5, label: 'half' },
+  { meters: 10000, label: '10K' },
+  { meters: 5000, label: '5K' },
+];
+
+// Inverse of guessRaceDistanceMeters, for display headings ("Predicted half").
+export function raceLabelFromMeters(meters) {
+  const match = DISTANCE_LABELS.find((d) => Math.abs(d.meters - meters) < 1);
+  return match?.label ?? 'race';
+}
+
+const PREDICTION_LOOKBACK_DAYS = 56;
+
+// Re-estimates threshold from a trailing 8-week window ending at each weekly
+// cutoff, then Riegel-predicts the goal distance from that snapshot — a real
+// (if approximate) rolling prediction, not a single number replayed
+// backwards. The trailing window matters: without it, a single old race
+// that happens to sit closest to a 60-minute effort can keep winning
+// "best tagged effort" indefinitely as the window slides forward, making
+// the trend flat even while current fitness is genuinely changing.
+// Snapshots with too little recent history to estimate a threshold carry
+// forward the nearest earlier estimate rather than leaving a gap.
+export function computeRacePredictionSeries(activities, targetDistanceMeters, weeks, now = Date.now()) {
+  const points = [];
+  let carry = null;
+  for (let w = weeks - 1; w >= 0; w--) {
+    const cutoff = now - w * 7 * DAY_MS;
+    const windowStart = cutoff - PREDICTION_LOOKBACK_DAYS * DAY_MS;
+    const subset = activities.filter((a) => {
+      const t = new Date(a.start_date).getTime();
+      return t <= cutoff && t > windowStart;
+    });
+    const threshold = estimateThreshold(subset);
+    if (threshold) carry = threshold;
+    if (!carry) {
+      points.push(null);
+      continue;
+    }
+    const equivDistance = carry.thresholdSpeed * 3600;
+    const predictedSeconds = riegelTimeForDistance(equivDistance, 3600, targetDistanceMeters);
+    points.push(predictedSeconds);
+  }
+  return points;
+}
+
+const BEST_DISTANCES = [
+  { label: '5 km', meters: 5000 },
+  { label: '10 km', meters: 10000 },
+  { label: 'Half', meters: 21097.5 },
+];
+
+// Personal bests at standard distances, normalized via Riegel to the exact
+// distance for a fair time (a logged "5.2 km" run is compared as a 5 km
+// effort) rather than comparing raw, slightly-mismatched distances.
+export function computeBests(activities, toleranceFraction = 0.05) {
+  const runs = activities.filter(isRun).filter((a) => a.average_speed > 0 && a.moving_time > 0);
+  return BEST_DISTANCES.map(({ label, meters }) => {
+    const candidates = runs
+      .filter((a) => Math.abs(a.distance - meters) / meters <= toleranceFraction)
+      .map((a) => ({ ...a, normalizedSeconds: riegelTimeForDistance(a.distance, a.moving_time, meters) }))
+      .sort((a, b) => a.normalizedSeconds - b.normalizedSeconds);
+    if (candidates.length === 0) return { distance: label, time: '—', delta: 'No runs at this distance yet' };
+    const best = candidates[0];
+    const second = candidates[1];
+    const delta = second ? formatDeltaSeconds(best.normalizedSeconds - second.normalizedSeconds) : 'First recorded';
+    return { distance: label, time: formatRaceTime(best.normalizedSeconds), delta };
+  });
+}
+
+function formatDeltaSeconds(diffSeconds) {
+  const rounded = Math.round(Math.abs(diffSeconds));
+  const sign = diffSeconds <= 0 ? '−' : '+';
+  return `${sign}${rounded} s`;
+}
+
+// Weekly running distance, oldest to newest.
+export function computeWeeklyKmSeries(activities, weeks, now = Date.now()) {
+  const runs = activities.filter(isRun);
+  const series = [];
+  for (let w = weeks - 1; w >= 0; w--) {
+    const start = now - (w + 1) * 7 * DAY_MS;
+    const end = now - w * 7 * DAY_MS;
+    const meters = runs
+      .filter((a) => {
+        const t = new Date(a.start_date).getTime();
+        return t >= start && t < end;
+      })
+      .reduce((s, a) => s + a.distance, 0);
+    series.push(meters / 1000);
+  }
+  return series;
+}
+
+// Samples a daily CTL/ATL series (from computeLoadSeries) at weekly
+// intervals, oldest to newest — for the fitness/fatigue trend chart.
+export function sampleWeekly(dailySeries, weeks) {
+  const points = [];
+  for (let w = weeks - 1; w >= 0; w--) {
+    const idx = dailySeries.length - 1 - w * 7;
+    points.push(dailySeries[Math.max(0, idx)]);
+  }
+  return points;
+}
+
+// Normalizes an array (plus one extra reference value, e.g. a goal) to 0-1
+// with the given orientation. "higherIsBetter: false" (e.g. race times,
+// where lower is better) inverts so the chart still reads as "up is good".
+export function normalizeSeries(values, referenceValue, higherIsBetter) {
+  const all = referenceValue === undefined || referenceValue === null ? values : [...values, referenceValue];
+  const finite = all.filter((v) => v !== null && v !== undefined && Number.isFinite(v));
+  if (finite.length === 0) return { series: values.map(() => 0), referenceNormalized: 0 };
+  const max = Math.max(...finite) * 1.05;
+  const min = 0;
+  const norm = (v) => {
+    if (v === null || v === undefined || !Number.isFinite(v)) return 0;
+    const scaled = (v - min) / (max - min || 1);
+    return higherIsBetter ? scaled : 1 - scaled;
+  };
+  return {
+    series: values.map(norm),
+    referenceNormalized: referenceValue === undefined || referenceValue === null ? null : norm(referenceValue),
+  };
+}

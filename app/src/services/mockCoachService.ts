@@ -380,6 +380,7 @@ export class MockCoachService implements CoachService {
           note: 'Fitness has risen every week of this block; fatigue spiked Tuesday and is still elevated. Form at +7 is where I want you before a key session.',
         },
         racePrediction: {
+          raceLabel: 'half',
           current: '1:28:58',
           goal: '1:29:30',
           goalLine: 1 - 46 / 96,

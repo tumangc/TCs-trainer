@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import { amendPrescription, chatWithCoach } from './coach.js';
 import { buildPlan, buildToday } from './planAssembler.js';
+import { buildProgress } from './progressAssembler.js';
 import { strava } from './strava.js';
 import { getUser, resetUser, updateUser } from './userStore.js';
 
@@ -159,6 +160,22 @@ app.get('/api/strava/today', async (_req, res) => {
 app.get('/api/strava/plan', async (_req, res) => {
   try {
     const result = await buildPlan(creds, getUser());
+    res.json(result);
+  } catch (err) {
+    if (err.code === 'NOT_CONNECTED') {
+      return res.status(401).json({ ok: false, error: 'not_connected' });
+    }
+    console.error(err);
+    res.status(502).json({ ok: false, error: 'strava_api_error', message: err.message });
+  }
+});
+
+// GET /api/strava/progress — fitness/fatigue/form trend, a rolling race-time
+// prediction (re-estimated weekly, not a single number replayed backwards),
+// weekly volume, and personal bests, all from real activities.
+app.get('/api/strava/progress', async (_req, res) => {
+  try {
+    const result = await buildProgress(creds, getUser());
     res.json(result);
   } catch (err) {
     if (err.code === 'NOT_CONNECTED') {

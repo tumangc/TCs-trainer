@@ -1,4 +1,4 @@
-import type { Belief, PlanData, TodayData } from '../types/domain';
+import type { Belief, PlanData, ProgressData, TodayData } from '../types/domain';
 
 export interface StravaStatus {
   connected: boolean;
@@ -76,5 +76,12 @@ export async function getStravaToday(): Promise<StravaTodayResult> {
 
 export async function getStravaPlan(): Promise<StravaPlanResult> {
   const res = await fetch('/api/strava/plan');
+  return res.json();
+}
+
+export type StravaProgressResult = ({ ok: true } & ProgressData) | { ok: false; error: string };
+
+export async function getStravaProgress(): Promise<StravaProgressResult> {
+  const res = await fetch('/api/strava/progress');
   return res.json();
 }
