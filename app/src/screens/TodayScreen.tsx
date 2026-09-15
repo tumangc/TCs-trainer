@@ -32,10 +32,16 @@ export function TodayScreen({ isFull, onSetDensity }: { isFull: boolean; onSetDe
     setAmendThinking(true);
     setAmendOpen(false);
     setAmendDraft(text);
-    service.submitAmend(text).then((result) => {
-      setAmendThinking(false);
-      setAmendResult(result);
-    });
+    service
+      .submitAmend(text)
+      .then((result) => {
+        setAmendThinking(false);
+        setAmendResult(result);
+      })
+      .catch((err: Error) => {
+        setAmendThinking(false);
+        setAmendResult({ title: 'Could not reach TC', explanation: err.message });
+      });
   };
 
   const acceptAmend = () => {

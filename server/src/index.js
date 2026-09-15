@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import { amendPrescription, chatWithCoach } from './coach.js';
 import { strava } from './strava.js';
 
 const PORT = process.env.PORT || 8787;
@@ -11,9 +12,43 @@ const REDIRECT_URI = process.env.STRAVA_REDIRECT_URI || `http://localhost:${PORT
 if (!CLIENT_ID || !CLIENT_SECRET) {
   console.warn('[strava] STRAVA_CLIENT_ID / STRAVA_CLIENT_SECRET are not set. Copy server/.env.example to server/.env and fill them in.');
 }
+if (!process.env.ANTHROPIC_API_KEY) {
+  console.warn('[coach] ANTHROPIC_API_KEY is not set. /api/coach/* routes will fail until server/.env has it.');
+}
 
 const app = express();
+app.use(express.json());
 const creds = { clientId: CLIENT_ID, clientSecret: CLIENT_SECRET };
+
+// POST /api/coach/chat — { message, history, context } -> { reply }
+app.post('/api/coach/chat', async (req, res) => {
+  const { message, history, context } = req.body ?? {};
+  if (typeof message !== 'string' || !message.trim()) {
+    return res.status(400).json({ error: 'message is required' });
+  }
+  try {
+    const reply = await chatWithCoach({ message, history, context });
+    res.json({ reply });
+  } catch (err) {
+    console.error(err);
+    res.status(502).json({ error: 'llm_error', message: err.message });
+  }
+});
+
+// POST /api/coach/amend — { freeText, context } -> { title, explanation }
+app.post('/api/coach/amend', async (req, res) => {
+  const { freeText, context } = req.body ?? {};
+  if (typeof freeText !== 'string' || !freeText.trim()) {
+    return res.status(400).json({ error: 'freeText is required' });
+  }
+  try {
+    const result = await amendPrescription({ freeText, context });
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(502).json({ error: 'llm_error', message: err.message });
+  }
+});
 
 // GET /api/strava/status — is Strava connected, and as whom?
 app.get('/api/strava/status', async (_req, res) => {
