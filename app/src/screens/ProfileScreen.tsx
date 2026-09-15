@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useCoachService } from '../services/coachServiceContext';
 import { disconnectStrava, getStravaStatus, stravaConnectUrl, testStravaConnection, type StravaStatus, type StravaTestResult } from '../services/stravaClient';
+import { resetAllData } from '../services/userStatus';
 import type { ProfileData } from '../types/domain';
 
 const ZONE_COLORS = ['#3f424d', '#423a6a', '#5d5294', '#9184d9', '#d2cefd'];
@@ -11,6 +12,7 @@ export function ProfileScreen({ isFull, onOpenModel, onOpenNotifs }: { isFull: b
   const [strava, setStrava] = useState<StravaStatus>({ connected: false });
   const [stravaTest, setStravaTest] = useState<StravaTestResult | null>(null);
   const [stravaBusy, setStravaBusy] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     service.getProfile().then(setData);
@@ -40,6 +42,13 @@ export function ProfileScreen({ isFull, onOpenModel, onOpenNotifs }: { isFull: b
     const result = await testStravaConnection();
     setStravaTest(result);
     setStravaBusy(false);
+  }
+
+  async function handleDeleteAccount() {
+    if (!window.confirm('Delete all your data and start onboarding from scratch? This disconnects Strava and cannot be undone.')) return;
+    setDeleting(true);
+    await resetAllData();
+    window.location.reload();
   }
 
   if (!data) return <div className="screen-loading muted">Loading profile…</div>;
@@ -299,8 +308,8 @@ export function ProfileScreen({ isFull, onOpenModel, onOpenNotifs }: { isFull: b
           <button type="button" className="btn btn-secondary" style={{ fontSize: 12 }}>
             Export everything
           </button>
-          <button type="button" className="btn btn-ghost" style={{ fontSize: 12, color: '#d2cefd' }}>
-            Delete account
+          <button type="button" className="btn btn-ghost" style={{ fontSize: 12, color: '#d2cefd' }} onClick={handleDeleteAccount} disabled={deleting}>
+            {deleting ? 'Deleting…' : 'Delete account'}
           </button>
         </div>
       </div>

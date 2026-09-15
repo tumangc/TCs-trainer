@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import { amendPrescription, chatWithCoach } from './coach.js';
 import { strava } from './strava.js';
-import { getUser, updateUser } from './userStore.js';
+import { getUser, resetUser, updateUser } from './userStore.js';
 
 const PORT = process.env.PORT || 8787;
 const APP_URL = process.env.APP_URL || 'http://localhost:5173';
@@ -29,6 +29,12 @@ app.get('/api/user', (_req, res) => {
 // PATCH /api/user — shallow-merge a patch into the persisted user, onboarding merged one level deep
 app.patch('/api/user', (req, res) => {
   res.json(updateUser(req.body ?? {}));
+});
+
+// DELETE /api/user — wipe the persisted profile and disconnect Strava, back to a fresh install
+app.delete('/api/user', async (_req, res) => {
+  await strava.deauthorize(creds).catch(() => {});
+  res.json(resetUser());
 });
 
 // POST /api/coach/chat — { message, history, context } -> { reply }

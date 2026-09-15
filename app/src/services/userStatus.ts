@@ -8,3 +8,8 @@ export async function getHasCompletedOnboarding(): Promise<boolean> {
     return false;
   }
 }
+
+/** Wipes the persisted profile and disconnects Strava — back to a fresh install. */
+export async function resetAllData(): Promise<void> {
+  await fetch('/api/user', { method: 'DELETE' });
+}

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -50,4 +50,9 @@ export function updateUser(patch) {
   mkdirSync(DATA_DIR, { recursive: true });
   writeFileSync(USER_PATH, JSON.stringify(next, null, 2));
   return next;
+}
+
+export function resetUser() {
+  if (existsSync(USER_PATH)) rmSync(USER_PATH);
+  return structuredClone(DEFAULT_USER);
 }
