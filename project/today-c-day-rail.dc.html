@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="stylesheet" href="_ds/nocturne-8eb4b3e4-52a2-4ce7-bc16-d3b21f7734ab/styles.css">
+<script src="_ds/nocturne-8eb4b3e4-52a2-4ce7-bc16-d3b21f7734ab/_ds_bundle.js"></script>
+<style>body{margin:0;background:#161826}.cd-s{scrollbar-width:none}.cd-s::-webkit-scrollbar{display:none}</style>
+</helmet>
+<div style="padding:28px;background:var(--color-bg);display:flex;justify-content:center">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+  <div class="cd-s" style="height:100%;overflow:auto;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);padding:58px 18px 34px">
+
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Threshold day</div>
+        <h3 style="margin:5px 0 0">06:40 · 58 min</h3>
+        <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-top:3px">Rotterdam Half in 49 days · on curve +32 s</div>
+      </div>
+      <div style="width:44px;height:44px;flex:none;position:relative">
+        <svg width="44" height="44" viewBox="0 0 44 44" style="transform:rotate(-90deg)">
+          <circle cx="22" cy="22" r="19" fill="none" stroke="#3f424d" stroke-width="4"></circle>
+          <circle cx="22" cy="22" r="19" fill="none" stroke="#9184d9" stroke-width="4" stroke-linecap="round" stroke-dasharray="93 999"></circle>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-variant-numeric:tabular-nums">78</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-bottom:16px">
+      <div style="width:3px;border-radius:2px;background:linear-gradient(to bottom,#3f424d 0 18%,#9184d9 18% 72%,#3f424d 72% 100%);flex:none"></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;border-radius:var(--radius-md);font-size:13px"><span>Warm-up 15 min</span><span style="font-variant-numeric:tabular-nums;color:color-mix(in srgb,var(--color-text) 70%,transparent)">5:40/km</span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;border-radius:var(--radius-md);background:var(--color-surface);font-size:13.5px;box-shadow:inset 0 0 0 1px color-mix(in srgb,#9184d9 35%,transparent)"><span>3 × 8 min @ threshold</span><span style="font-variant-numeric:tabular-nums;color:var(--color-accent-300)">4:35/km</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;border-radius:var(--radius-md);font-size:13px"><span>Float 3 min × 2</span><span style="font-variant-numeric:tabular-nums;color:color-mix(in srgb,var(--color-text) 70%,transparent)">5:40/km</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;border-radius:var(--radius-md);font-size:13px"><span>Cool-down 10 min</span><span style="font-variant-numeric:tabular-nums;color:color-mix(in srgb,var(--color-text) 70%,transparent)">easy</span></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:18px">
+      <button class="btn btn-primary" style="flex:1">Send to watch</button>
+      <button class="btn btn-secondary">Amend</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div class="card elev-sm" style="padding:9px;gap:1px"><div style="font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent)">HRV</div><div style="font-size:15px;font-variant-numeric:tabular-nums">62<span style="font-size:10px"> ms</span></div></div>
+      <div class="card elev-sm" style="padding:9px;gap:1px"><div style="font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Sleep</div><div style="font-size:15px;font-variant-numeric:tabular-nums">7:12</div></div>
+      <div class="card elev-sm" style="padding:9px;gap:1px"><div style="font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Load</div><div style="font-size:15px;font-variant-numeric:tabular-nums">412</div></div>
+    </div>
+
+    <div class="card elev-sm" style="gap:var(--space-2);margin-bottom:12px">
+      <div class="card-kicker" style="margin:0">Zones this week · minutes</div>
+      <svg viewBox="0 0 300 58" style="width:100%;height:58px">
+        <g>
+          <rect x="0" y="8" width="212" height="10" rx="5" fill="#423a6a"></rect>
+          <rect x="0" y="24" width="96" height="10" rx="5" fill="#5d5294"></rect>
+          <rect x="0" y="40" width="54" height="10" rx="5" fill="#9184d9"></rect>
+        </g>
+        <g fill="#b2b6ca" font-size="9" font-family="Inter, sans-serif">
+          <text x="220" y="17">Z1–2 · 214</text>
+          <text x="104" y="33">Z3 · 96</text>
+          <text x="62" y="49">Z4–5 · 54</text>
+        </g>
+      </svg>
+      <div style="font-size:12px;line-height:1.5;color:color-mix(in srgb,var(--color-text) 78%,transparent);border-top:1px solid var(--color-divider);padding-top:8px">Polarised split holding at 79/21 — where I want you in build. Today adds 24 min of Z4. — TC</div>
+    </div>
+
+    <div class="card elev-sm" style="gap:var(--space-2)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="card-kicker" style="margin:0">Open questions</div>
+        <span class="tag tag-outline" style="font-size:9.5px;padding:2px 7px">2 waiting</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--color-text) 8%,transparent)">
+        <div style="flex:1;font-size:12.5px;line-height:1.45">Was Tuesday's 9 s/km overshoot deliberate?</div>
+        <div style="color:var(--color-accent)">›</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
+        <div style="flex:1;font-size:12.5px;line-height:1.45">Confirm Saturday's long-run window</div>
+        <div style="color:var(--color-accent)">›</div>
+      </div>
+    </div>
+
+  </div>
+</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:940}}"></script>
+</body>
+</html>

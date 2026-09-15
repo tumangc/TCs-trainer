@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/nocturne-8eb4b3e4-52a2-4ce7-bc16-d3b21f7734ab/styles.css">
+<script src="_ds/nocturne-8eb4b3e4-52a2-4ce7-bc16-d3b21f7734ab/_ds_bundle.js"></script>
+<style>
+body{margin:0;background:#161826}
+.tc-s{scrollbar-width:none}
+.tc-s::-webkit-scrollbar{display:none}
+@keyframes tc-rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@keyframes tc-pulse{0%,100%{opacity:.4}50%{opacity:1}}
+</style>
+</helmet>
+<div style="display:flex;gap:44px;align-items:flex-start;padding:44px;font-family:var(--font-body);color:var(--color-text);min-height:100vh;box-sizing:border-box">
+
+  <div style="width:308px;flex:none;display:flex;flex-direction:column;gap:18px">
+    <div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent);margin-bottom:8px">Pass 1 · direction A</div>
+      <h2 style="margin:0 0 6px">TCs Trainer</h2>
+      <p style="margin:0;font-size:13px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">TC writes the prescription, shows the inputs behind it, names the principle, and compares you only against your own history. The watch records; the app decides and explains.</p>
+    </div>
+    <hr class="hr" style="margin:0">
+    <div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 60%,transparent);margin-bottom:10px">Built this pass</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:12.5px;line-height:1.5;color:color-mix(in srgb,var(--color-text) 78%,transparent)">
+        <div><span style="color:var(--color-accent-300)">Today</span> — prescription sheet, basis, open questions. Amend by writing to TC.</div>
+        <div><span style="color:var(--color-accent-300)">Plan</span> — collapsible block overview (phase bar, load ramp, key sessions left) over a dense week list.</div>
+        <div><span style="color:var(--color-accent-300)">Progress</span> — load &amp; form, race prediction, volume, bests.</div>
+        <div><span style="color:var(--color-accent-300)">TC's model of you</span> — beliefs grouped, each with its revision history.</div>
+        <div><span style="color:var(--color-accent-300)">Onboarding</span> — goal → constraints → fitness → the block TC would run, with where it's guessing.</div>
+        <div><span style="color:var(--color-accent-300)">Run analysis</span> — pace/HR trace and a timeline with TC's notes pinned to the moments they're about.</div>
+        <div><span style="color:var(--color-accent-300)">TC chat</span> — ask why; it answers from your runs and says when it doesn't know.</div>
+        <div><span style="color:var(--color-accent-300)">Profile</span> — zones TC inferred, devices, constraints, race calendar, learning log, data.</div>
+        <div><span style="color:var(--color-accent-300)">Notifications</span> — the five messages TC sends, as they arrive, each switchable.</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 60%,transparent);margin-bottom:10px">Try</div>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">
+        <div>Simple / Full toggle — it remembers your last choice</div>
+        <div>Amend → "only have 40 minutes" → TC revises</div>
+        <div>Answer the two open questions</div>
+        <div>Tap any belief in Model to see when TC changed its mind</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 60%,transparent);margin-bottom:10px">Jump to</div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <button class="btn btn-secondary" style="justify-content:flex-start" onClick="{{ startOnboard }}">Run onboarding from the top</button>
+        <button class="btn btn-secondary" style="justify-content:flex-start" onClick="{{ openAnalysis }}">Open Tuesday's run analysis</button>
+        <button class="btn btn-secondary" style="justify-content:flex-start" onClick="{{ goChat }}">Talk to TC</button>
+        <button class="btn btn-secondary" style="justify-content:flex-start" onClick="{{ goProfile }}">Profile hub</button>
+        <button class="btn btn-secondary" style="justify-content:flex-start" onClick="{{ goNotifs }}">Notifications</button>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 60%,transparent);margin-bottom:10px">Still open</div>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">
+        <div>Watch pairing and mid-run screens</div>
+        <div>Race week — taper and a race-day prescription</div>
+      </div>
+    </div>
+  </div>
+
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+    <div style="height:100%;display:flex;flex-direction:column;background:var(--color-bg);font-family:var(--font-body);color:var(--color-text)">
+
+      <div class="tc-s" style="flex:1;overflow:auto;padding:{{ padTop }} 18px 104px">
+
+        <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
+              <div>
+                <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Thu 26 Feb · wk 7/14 · build</div>
+                <h3 style="margin:5px 0 0">Session 41</h3>
+              </div>
+              <div class="seg">
+                <button class="seg-opt" style="padding:5px 9px;font-size:11px;background:transparent;border:0;font-family:inherit;color:{{ simpleFg }};box-shadow:{{ simpleRing }}" onClick="{{ setSimple }}">Simple</button>
+                <button class="seg-opt" style="padding:5px 9px;font-size:11px;background:transparent;border:0;border-left:1px solid var(--color-divider);font-family:inherit;color:{{ fullFg }};box-shadow:{{ fullRing }}" onClick="{{ setFull }}">Full</button>
+              </div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:10px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between">
+                <div class="card-kicker" style="margin:0">Prescription · threshold</div>
+                <span class="tag tag-accent" style="font-size:9.5px;padding:2px 7px">{{ revisedTag }}</span>
+              </div>
+              <div style="font-size:21px;font-family:var(--font-heading);line-height:1.18">{{ rxTitle }}<br><span style="font-size:14px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">{{ rxSub }}</span></div>
+
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ rxRows }}" as="r" hint-placeholder-count="5">
+                  <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12.5px;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                    <span style="color:color-mix(in srgb,var(--color-text) 66%,transparent)">{{ r.k }}</span>
+                    <span style="font-variant-numeric:tabular-nums">{{ r.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display:flex;gap:8px;margin-top:2px">
+                <button class="btn btn-primary" style="flex:1" onClick="{{ sendToWatch }}">{{ sendLabel }}</button>
+                <button class="btn btn-secondary" onClick="{{ toggleAmend }}">Amend</button>
+              </div>
+
+              <sc-if value="{{ amendOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="border-top:1px solid var(--color-divider);padding-top:10px;display:flex;flex-direction:column;gap:8px;animation:tc-rise .18s ease">
+                  <div style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Tell TC what's changed. It rewrites the session and says what it costs.</div>
+                  <textarea class="input" style="min-height:64px;font-size:13px" placeholder="e.g. only have 40 minutes this morning" value="{{ amendDraft }}" onChange="{{ onAmendDraft }}"></textarea>
+                  <div style="display:flex;gap:7px;flex-wrap:wrap">
+                    <sc-for list="{{ amendPresets }}" as="p" hint-placeholder-count="3">
+                      <button class="tag tag-outline" style="background:transparent;cursor:pointer;font-family:inherit" onClick="{{ p.pick }}">{{ p.label }}</button>
+                    </sc-for>
+                  </div>
+                  <button class="btn btn-primary btn-block" onClick="{{ sendAmend }}">Send to TC</button>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ amendThinking }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:12.5px;color:color-mix(in srgb,var(--color-text) 60%,transparent);animation:tc-pulse 1.3s infinite">TC is rewriting the session…</div>
+              </sc-if>
+
+              <sc-if value="{{ amendReply }}" hint-placeholder-val="{{ false }}">
+                <div class="card" style="background:var(--color-accent-900);box-shadow:0 0 0 1px var(--color-accent-700);gap:var(--space-2);animation:tc-rise .2s ease">
+                  <div style="font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent-300)">TC · revised session</div>
+                  <div style="font-size:14px;font-family:var(--font-heading)">{{ amendRxTitle }}</div>
+                  <div style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 85%,transparent)">{{ amendReply }}</div>
+                  <div style="display:flex;gap:8px;margin-top:2px">
+                    <button class="btn btn-primary" style="flex:1" onClick="{{ acceptAmend }}">Accept</button>
+                    <button class="btn btn-secondary" onClick="{{ discardAmend }}">Keep original</button>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2);margin-bottom:10px">
+              <div class="card-kicker" style="margin:0">Basis for this session</div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;line-height:1.5">
+                <sc-for list="{{ basis }}" as="b" hint-placeholder-count="3">
+                  <div style="display:flex;gap:9px"><span style="color:var(--color-accent-300);font-variant-numeric:tabular-nums">{{ b.val }}</span><span style="color:color-mix(in srgb,var(--color-text) 70%,transparent)">{{ b.note }}</span></div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ isFull }}" hint-placeholder-val="{{ true }}">
+                <div style="border-top:1px solid var(--color-divider);padding-top:9px;font-size:12.5px;line-height:1.6;color:color-mix(in srgb,var(--color-text) 82%,transparent)">
+                  Recovery markers are within range, so interval duration is unchanged. Principle: <span style="color:var(--color-accent-300)">progressive overload at threshold</span> — your third rep is the limiter, so this holds duration rather than raising pace. Against your own week 3, that's +2 min at threshold.
+                  <div style="margin-top:8px;font-size:11.5px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">— TC</div>
+                </div>
+              </sc-if>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2)">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div class="card-kicker" style="margin:0">Open questions · {{ qCount }}</div>
+                <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">{{ qScope }}</span>
+              </div>
+              <sc-for list="{{ questions }}" as="q" hint-placeholder-count="2">
+                <div style="padding:8px 0;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                  <div style="font-size:12.5px;line-height:1.5">{{ q.text }}</div>
+                  <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">
+                    <sc-for list="{{ q.answers }}" as="a" hint-placeholder-count="2">
+                      <button class="tag tag-outline" style="background:transparent;cursor:pointer;font-family:inherit" onClick="{{ a.pick }}">{{ a.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+              <sc-if value="{{ qResolved }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 82%,transparent);animation:tc-rise .2s ease">{{ qResolved }}</div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isPlan }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Block · Rotterdam Half</div>
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;margin:5px 0 16px">
+              <h3 style="margin:0">Week 7 of 14</h3>
+              <div style="font-size:12.5px;color:color-mix(in srgb,var(--color-text) 66%,transparent);font-variant-numeric:tabular-nums">49 days out</div>
+            </div>
+
+            <button class="card elev-sm" style="width:100%;border:0;cursor:pointer;font-family:inherit;color:inherit;text-align:left;gap:var(--space-3);margin-bottom:10px" onClick="{{ toggleBlock }}">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div class="card-kicker" style="margin:0">Block overview</div>
+                <span style="font-size:11px;color:var(--color-accent)">{{ blockToggle }}</span>
+              </div>
+              <div style="display:flex;gap:3px">
+                <div style="flex:4;height:5px;border-radius:3px;background:var(--color-accent)"></div>
+                <div style="flex:5;height:5px;border-radius:3px;background:linear-gradient(to right,var(--color-accent) 60%,#3f424d 60%)"></div>
+                <div style="flex:3;height:5px;border-radius:3px;background:#3f424d"></div>
+                <div style="flex:2;height:5px;border-radius:3px;background:#3f424d"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent)">
+                <span>Base 1–4</span><span>Build 5–9</span><span>Peak 10–12</span><span>Taper 13–14</span>
+              </div>
+
+              <sc-if value="{{ blockOpen }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--color-divider);padding-top:11px;animation:tc-rise .18s ease">
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-bottom:6px"><span>Weekly load ramp</span><span style="font-variant-numeric:tabular-nums">412 this week · +6%</span></div>
+                    <svg viewBox="0 0 300 66" style="width:100%;height:66px">
+                      <g fill="#423a6a">
+                        <rect x="0" y="40" width="17" height="26" rx="2.5"></rect>
+                        <rect x="21" y="34" width="17" height="32" rx="2.5"></rect>
+                        <rect x="42" y="38" width="17" height="28" rx="2.5"></rect>
+                        <rect x="63" y="28" width="17" height="38" rx="2.5"></rect>
+                        <rect x="84" y="24" width="17" height="42" rx="2.5"></rect>
+                        <rect x="105" y="30" width="17" height="36" rx="2.5"></rect>
+                      </g>
+                      <rect x="126" y="18" width="17" height="48" rx="2.5" fill="#9184d9"></rect>
+                      <g fill="#2b2741">
+                        <rect x="147" y="14" width="17" height="52" rx="2.5"></rect>
+                        <rect x="168" y="10" width="17" height="56" rx="2.5"></rect>
+                        <rect x="189" y="6" width="17" height="60" rx="2.5"></rect>
+                        <rect x="210" y="12" width="17" height="54" rx="2.5"></rect>
+                        <rect x="231" y="16" width="17" height="50" rx="2.5"></rect>
+                        <rect x="252" y="34" width="17" height="32" rx="2.5"></rect>
+                        <rect x="273" y="46" width="17" height="20" rx="2.5"></rect>
+                      </g>
+                    </svg>
+                  </div>
+                  <div>
+                    <div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-bottom:7px">Key sessions remaining · 11</div>
+                    <div style="display:flex;flex-direction:column;gap:6px;font-size:12.5px">
+                      <div style="display:flex;justify-content:space-between"><span>Threshold 4 × 8 min</span><span style="color:color-mix(in srgb,var(--color-text) 66%,transparent);font-variant-numeric:tabular-nums">wk 8</span></div>
+                      <div style="display:flex;justify-content:space-between"><span>15 km tune-up race</span><span style="color:var(--color-accent-300);font-variant-numeric:tabular-nums">wk 10</span></div>
+                      <div style="display:flex;justify-content:space-between"><span>Half-pace 3 × 5 km</span><span style="color:color-mix(in srgb,var(--color-text) 66%,transparent);font-variant-numeric:tabular-nums">wk 11</span></div>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+            </button>
+
+            <div class="card elev-sm" style="flex-direction:row;align-items:center;gap:10px;margin-bottom:12px">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--color-accent);animation:tc-pulse 2.4s infinite;flex:none"></div>
+              <div style="flex:1;font-size:12.5px;line-height:1.45">Wednesday's intervals became a recovery run — you flew Tuesday night and slept 5:40.</div>
+              <button class="btn btn-ghost" style="font-size:12px">Undo</button>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 4px">
+              <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent)">This week · 52 km · 412 load</div>
+              <div style="display:flex;gap:4px">
+                <button class="btn btn-secondary" style="padding:2px 8px;font-size:12px">‹</button>
+                <button class="btn btn-secondary" style="padding:2px 8px;font-size:12px">›</button>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ sessions }}" as="s" hint-placeholder-count="7">
+                <div style="display:flex;align-items:center;gap:11px;padding:10px 2px;cursor:{{ s.cursor }};background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px" onClick="{{ s.open }}">
+                  <div style="width:24px;font-size:11px;letter-spacing:.05em;color:color-mix(in srgb,var(--color-text) 66%,transparent)">{{ s.day }}</div>
+                  <div style="width:3px;height:26px;border-radius:2px;background:{{ s.mark }};flex:none"></div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13.5px;color:{{ s.fg }}">{{ s.title }}</div>
+                    <div style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-top:2px">{{ s.detail }}</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-size:11px;color:{{ s.statusFg }}">{{ s.status }}</div>
+                    <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 66%,transparent);font-variant-numeric:tabular-nums">{{ s.load }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isProgress }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Since 2 December · 12 weeks</div>
+            <h3 style="margin:5px 0 16px">Progress</h3>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div class="card-kicker" style="margin:0">Load &amp; form</div>
+                <div style="font-size:11.5px;font-variant-numeric:tabular-nums;color:color-mix(in srgb,var(--color-text) 70%,transparent)">CTL 58 · ATL 51 · TSB +7</div>
+              </div>
+              <svg viewBox="0 0 300 120" style="width:100%;height:120px">
+                <defs>
+                  <linearGradient id="tcFit" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#9184d9" stop-opacity=".3"></stop>
+                    <stop offset="100%" stop-color="#9184d9" stop-opacity="0"></stop>
+                  </linearGradient>
+                </defs>
+                <g stroke="#292b31">
+                  <line x1="0" y1="28" x2="300" y2="28"></line>
+                  <line x1="0" y1="58" x2="300" y2="58"></line>
+                  <line x1="0" y1="88" x2="300" y2="88"></line>
+                </g>
+                <path d="M0 96 L27 92 L54 86 L81 84 L108 74 L135 70 L162 58 L189 56 L216 44 L243 38 L270 30 L297 24 L297 120 L0 120 Z" fill="url(#tcFit)"></path>
+                <polyline points="0,96 27,92 54,86 81,84 108,74 135,70 162,58 189,56 216,44 243,38 270,30 297,24" fill="none" stroke="#9184d9" stroke-width="2" stroke-linejoin="round"></polyline>
+                <polyline points="0,104 27,98 54,100 81,90 108,94 135,82 162,86 189,72 216,78 243,62 270,70 297,40" fill="none" stroke="#b2b6ca" stroke-width="1.5" stroke-dasharray="4 4"></polyline>
+              </svg>
+              <div style="display:flex;gap:14px;font-size:11px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">
+                <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:2px;background:#9184d9;display:inline-block"></span>Fitness</span>
+                <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:2px;background:#b2b6ca;display:inline-block"></span>Fatigue</span>
+              </div>
+              <sc-if value="{{ isFull }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 82%,transparent);border-top:1px solid var(--color-divider);padding-top:9px">Fitness has risen every week of this block; fatigue spiked Tuesday and is still elevated. Form at +7 is where I want you before a key session. — TC</div>
+              </sc-if>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div class="card-kicker" style="margin:0">Predicted half</div>
+                <div style="font-size:11.5px;font-variant-numeric:tabular-nums;color:var(--color-accent-300)">1:28:58 · goal 1:29:30</div>
+              </div>
+              <svg viewBox="0 0 300 96" style="width:100%;height:96px">
+                <line x1="0" y1="46" x2="300" y2="46" stroke="#9184d9" stroke-width="1" stroke-dasharray="3 4" opacity=".55"></line>
+                <text x="0" y="40" fill="#b2b6ca" font-size="9" font-family="Inter, sans-serif">goal 1:29:30</text>
+                <polyline points="0,86 27,84 54,78 81,74 108,70 135,64 162,60 189,56 216,52 243,48 270,44 297,38" fill="none" stroke="#9184d9" stroke-width="2" stroke-linejoin="round"></polyline>
+                <circle cx="297" cy="38" r="3.5" fill="#9184d9"></circle>
+              </svg>
+              <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Crossed the goal line in week 6. Prediction from your own threshold curve, not a population table.</div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:10px">
+              <div class="card-kicker" style="margin:0">Weekly volume</div>
+              <svg viewBox="0 0 300 78" style="width:100%;height:78px">
+                <g fill="#423a6a">
+                  <rect x="0" y="42" width="19" height="36" rx="2.5"></rect>
+                  <rect x="25" y="36" width="19" height="42" rx="2.5"></rect>
+                  <rect x="50" y="48" width="19" height="30" rx="2.5"></rect>
+                  <rect x="75" y="30" width="19" height="48" rx="2.5"></rect>
+                  <rect x="100" y="26" width="19" height="52" rx="2.5"></rect>
+                  <rect x="125" y="40" width="19" height="38" rx="2.5"></rect>
+                  <rect x="150" y="20" width="19" height="58" rx="2.5"></rect>
+                  <rect x="175" y="14" width="19" height="64" rx="2.5"></rect>
+                  <rect x="200" y="32" width="19" height="46" rx="2.5"></rect>
+                  <rect x="225" y="10" width="19" height="68" rx="2.5"></rect>
+                  <rect x="250" y="6" width="19" height="72" rx="2.5"></rect>
+                </g>
+                <rect x="275" y="2" width="19" height="76" rx="2.5" fill="#9184d9"></rect>
+              </svg>
+              <div style="display:flex;justify-content:space-between;font-size:10.5px;color:color-mix(in srgb,var(--color-text) 66%,transparent)"><span>12 wks ago</span><span>52 km this week</span></div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2)">
+              <div class="card-kicker" style="margin:0">Bests this block</div>
+              <sc-for list="{{ bests }}" as="b" hint-placeholder-count="3">
+                <div style="display:flex;align-items:baseline;gap:10px;padding:7px 0;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 7%,transparent) 20px,color-mix(in srgb,var(--color-text) 7%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                  <div style="width:52px;font-size:12px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">{{ b.dist }}</div>
+                  <div style="flex:1;font-size:15px;font-variant-numeric:tabular-nums">{{ b.time }}</div>
+                  <div style="font-size:11.5px;color:var(--color-accent-300)">{{ b.delta }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isModel }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Transparency</div>
+            <h3 style="margin:5px 0 6px">What TC believes</h3>
+            <p style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 70%,transparent);margin:0 0 14px">Every belief below is inferred from your own runs. Tap one to see when it changed and what changed it.</p>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ beliefs }}" as="b" hint-placeholder-count="4">
+                <div class="card elev-sm" style="gap:var(--space-2)">
+                  <button style="background:transparent;border:0;padding:0;text-align:left;font-family:inherit;color:inherit;cursor:pointer;display:flex;gap:10px;align-items:flex-start" onClick="{{ b.toggle }}">
+                    <div style="flex:1">
+                      <div style="font-size:13.5px;line-height:1.4">{{ b.claim }}</div>
+                      <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+                        <span class="tag tag-neutral" style="font-size:9.5px;padding:2px 7px">{{ b.confidence }}</span>
+                        <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">{{ b.revised }}</span>
+                      </div>
+                    </div>
+                    <div style="color:var(--color-accent);font-size:13px;line-height:1.4">{{ b.chev }}</div>
+                  </button>
+                  <sc-if value="{{ b.open }}" hint-placeholder-val="{{ false }}">
+                    <div style="border-top:1px solid var(--color-divider);padding-top:10px;display:flex;gap:11px;animation:tc-rise .18s ease">
+                      <div style="width:1px;background:linear-gradient(to bottom,var(--color-accent),color-mix(in srgb,var(--color-accent) 18%,transparent));flex:none;margin:4px 0"></div>
+                      <div style="flex:1;display:flex;flex-direction:column;gap:11px">
+                        <sc-for list="{{ b.history }}" as="h" hint-placeholder-count="2">
+                          <div>
+                            <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--color-accent-300)">{{ h.date }}</div>
+                            <div style="font-size:12.5px;line-height:1.5;margin-top:3px">{{ h.what }}</div>
+                            <div style="font-size:11.5px;line-height:1.5;margin-top:3px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">{{ h.why }}</div>
+                          </div>
+                        </sc-for>
+                        <button class="btn btn-secondary" style="align-self:flex-start;font-size:12px">This is wrong</button>
+                      </div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isChat }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Your coach · replies in seconds</div>
+            <h3 style="margin:5px 0 4px">TC</h3>
+            <p style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 70%,transparent);margin:0 0 14px">TC can see every run you have logged, this block's plan and its own reasoning. Ask it why, or tell it what changed.</p>
+
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <sc-for list="{{ chat }}" as="m" hint-placeholder-count="4">
+                <div style="align-self:{{ m.align }};max-width:86%;padding:9px 11px;border-radius:var(--radius-md);font-size:12.5px;line-height:1.55;background:{{ m.bg }};box-shadow:{{ m.ring }};color:{{ m.fg }};white-space:pre-line">{{ m.text }}</div>
+              </sc-for>
+              <sc-if value="{{ chatThinking }}" hint-placeholder-val="{{ false }}">
+                <div style="align-self:flex-start;font-size:12px;color:color-mix(in srgb,var(--color-text) 60%,transparent);animation:tc-pulse 1.3s infinite">TC is reading your last four weeks…</div>
+              </sc-if>
+            </div>
+
+            <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:14px">
+              <sc-for list="{{ chatPrompts }}" as="p" hint-placeholder-count="3">
+                <button class="tag tag-outline" style="background:transparent;cursor:pointer;font-family:inherit" onClick="{{ p.pick }}">{{ p.label }}</button>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;gap:7px;margin-top:12px">
+              <input class="input" style="flex:1;font-size:13px" placeholder="Ask TC anything" value="{{ chatDraft }}" onChange="{{ onChatDraft }}" onKeyDown="{{ onChatKey }}">
+              <button class="btn btn-primary" onClick="{{ sendChat }}">Send</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isAnalysis }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <button class="btn btn-ghost" style="padding:2px 0;font-size:12px;margin-bottom:10px" onClick="{{ closeAnalysis }}">‹ Back to plan</button>
+            <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Tue 24 Feb · 06:48 · analysed 07:41</div>
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;margin:5px 0 16px">
+              <h3 style="margin:0">Easy 8 km</h3>
+              <div style="font-size:12.5px;color:color-mix(in srgb,var(--color-text) 66%,transparent);font-variant-numeric:tabular-nums">44:12</div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:10px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between">
+                <div class="card-kicker" style="margin:0">Verdict</div>
+                <span class="tag tag-accent" style="font-size:9.5px;padding:2px 7px">9 s/km fast</span>
+              </div>
+              <div style="font-size:15px;font-family:var(--font-heading);line-height:1.35">You ran an easy run at the top of easy — and your body did not mind.</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px 14px">
+                <sc-for list="{{ runStats }}" as="m" hint-placeholder-count="4">
+                  <div>
+                    <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 62%,transparent)">{{ m.k }}</div>
+                    <div style="font-size:14.5px;font-variant-numeric:tabular-nums;margin-top:2px;color:{{ m.fg }}">{{ m.v }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:10px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between">
+                <div class="card-kicker" style="margin:0">Pace &amp; heart rate</div>
+                <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">3 notes pinned</span>
+              </div>
+              <svg viewBox="0 0 300 110" style="width:100%;height:110px">
+                <g stroke="#292b31">
+                  <line x1="0" y1="26" x2="300" y2="26"></line>
+                  <line x1="0" y1="58" x2="300" y2="58"></line>
+                  <line x1="0" y1="90" x2="300" y2="90"></line>
+                </g>
+                <polyline points="0,74 20,70 40,52 60,48 80,50 100,62 120,66 140,58 160,44 180,40 200,42 220,46 240,52 260,56 280,58 297,60" fill="none" stroke="#9184d9" stroke-width="2" stroke-linejoin="round"></polyline>
+                <polyline points="0,96 20,88 40,80 60,76 80,74 100,70 120,66 140,64 160,68 180,66 200,64 220,66 240,68 260,70 280,70 297,72" fill="none" stroke="#b2b6ca" stroke-width="1.4" stroke-dasharray="4 4"></polyline>
+                <g fill="#161826" stroke="#9184d9" stroke-width="2">
+                  <circle cx="14" cy="72" r="4"></circle>
+                  <circle cx="50" cy="50" r="4"></circle>
+                  <circle cx="180" cy="40" r="4"></circle>
+                </g>
+              </svg>
+              <div style="display:flex;gap:14px;font-size:11px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">
+                <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:2px;background:#9184d9;display:inline-block"></span>Pace</span>
+                <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:2px;background:#b2b6ca;display:inline-block"></span>Heart rate</span>
+              </div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2);margin-bottom:10px">
+              <div class="card-kicker" style="margin:0">Timeline</div>
+              <div style="display:flex;gap:11px">
+                <div style="width:1px;background:linear-gradient(to bottom,transparent,var(--color-accent) 8%,color-mix(in srgb,var(--color-accent) 22%,transparent));flex:none;margin:6px 0"></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:13px">
+                  <sc-for list="{{ timeline }}" as="t" hint-placeholder-count="5">
+                    <div>
+                      <div style="display:flex;align-items:baseline;gap:9px">
+                        <span style="font-size:11px;font-variant-numeric:tabular-nums;color:var(--color-accent-300);width:44px;flex:none">{{ t.at }}</span>
+                        <span style="font-size:13px;flex:1">{{ t.label }}</span>
+                        <span style="font-size:11.5px;font-variant-numeric:tabular-nums;color:color-mix(in srgb,var(--color-text) 66%,transparent)">{{ t.metric }}</span>
+                      </div>
+                      <sc-if value="{{ t.note }}" hint-placeholder-val="{{ true }}">
+                        <div style="margin:7px 0 0 53px;padding:8px 10px;border-radius:var(--radius-md);background:var(--color-accent-900);box-shadow:0 0 0 1px var(--color-accent-700)">
+                          <div style="font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent-300)">TC</div>
+                          <div style="font-size:12.5px;line-height:1.55;margin-top:3px">{{ t.note }}</div>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2)">
+              <div class="card-kicker" style="margin:0">What this changes</div>
+              <div style="display:flex;flex-direction:column;gap:8px;font-size:12.5px;line-height:1.55">
+                <div>Nothing in today's threshold session — the load cost of 46 against 42 planned is inside tolerance.</div>
+                <div>It moves <span style="color:var(--color-accent-300)">"you run easy days too hard"</span> from a belief toward a question, which is why I asked you about it on Today.</div>
+                <div>If you tell me it felt easy, easy pace becomes 5:25/km and Saturday's long run gets 4 s/km faster.</div>
+                <div style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">— TC</div>
+              </div>
+              <button class="btn btn-secondary" style="align-self:flex-start;font-size:12px" onClick="{{ goChat }}">Ask TC about this run</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isOnboard }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="display:flex;gap:4px">
+                <sc-for list="{{ onbDots }}" as="d" hint-placeholder-count="4">
+                  <div style="width:22px;height:3px;border-radius:2px;background:{{ d.bg }}"></div>
+                </sc-for>
+              </div>
+              <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">{{ onbCount }}</div>
+            </div>
+
+            <sc-if value="{{ onb1 }}" hint-placeholder-val="{{ true }}">
+              <div style="animation:tc-rise .2s ease">
+                <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Step one</div>
+                <h3 style="margin:5px 0 6px">What are you training for?</h3>
+                <p style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 70%,transparent);margin:0 0 14px">Everything I prescribe works backwards from this date. You can change it later and I will rebuild the block.</p>
+
+                <div class="seg" style="width:100%;margin-bottom:12px">
+                  <sc-for list="{{ goalKinds }}" as="g" hint-placeholder-count="3">
+                    <button class="seg-opt" style="flex:1;padding:8px 6px;font-size:11.5px;background:transparent;border:0;font-family:inherit;color:{{ g.fg }};box-shadow:{{ g.ring }}" onClick="{{ g.pick }}">{{ g.label }}</button>
+                  </sc-for>
+                </div>
+
+                <div class="card elev-sm" style="gap:var(--space-3)">
+                  <div class="field"><label for="tc-race">Race</label><input class="input" id="tc-race" value="Rotterdam Half Marathon" readonly></div>
+                  <div style="display:flex;gap:10px">
+                    <div class="field" style="flex:1"><label for="tc-date">Date</label><input class="input" id="tc-date" value="12 April 2026" readonly></div>
+                    <div class="field" style="flex:1"><label for="tc-goal">Goal time</label><input class="input" id="tc-goal" value="1:29:30" readonly></div>
+                  </div>
+                  <div style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 78%,transparent);border-top:1px solid var(--color-divider);padding-top:9px">{{ goalNote }}<div style="margin-top:6px;font-size:11.5px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">— TC</div></div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ onb2 }}" hint-placeholder-val="{{ false }}">
+              <div style="animation:tc-rise .2s ease">
+                <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Step two</div>
+                <h3 style="margin:5px 0 6px">When can you actually run?</h3>
+                <p style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 70%,transparent);margin:0 0 14px">I would rather plan around your real week than reschedule every session you miss.</p>
+
+                <div class="card elev-sm" style="gap:var(--space-4)">
+                  <div>
+                    <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-bottom:8px">Days you can't run</div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
+                      <sc-for list="{{ offDays }}" as="d" hint-placeholder-count="7">
+                        <button class="tag" style="cursor:pointer;font-family:inherit;min-width:34px;justify-content:center;background:{{ d.bg }};color:{{ d.fg }};box-shadow:{{ d.ring }}" onClick="{{ d.pick }}">{{ d.label }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-bottom:8px">Most time on a weekday</div>
+                    <div class="seg" style="width:100%">
+                      <sc-for list="{{ timeCaps }}" as="t" hint-placeholder-count="4">
+                        <button class="seg-opt" style="flex:1;padding:7px 4px;font-size:11.5px;background:transparent;border:0;font-family:inherit;color:{{ t.fg }};box-shadow:{{ t.ring }}" onClick="{{ t.pick }}">{{ t.label }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-bottom:8px">Cross-training I should count</div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
+                      <sc-for list="{{ crossOpts }}" as="c" hint-placeholder-count="4">
+                        <button class="tag" style="cursor:pointer;font-family:inherit;background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.ring }}" onClick="{{ c.pick }}">{{ c.label }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div class="field"><label for="tc-commit">Anything recurring</label><input class="input" id="tc-commit" value="Club session Tuesday 19:00" readonly></div>
+                  <div style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 78%,transparent);border-top:1px solid var(--color-divider);padding-top:9px">{{ constraintNote }}<div style="margin-top:6px;font-size:11.5px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">— TC</div></div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ onb3 }}" hint-placeholder-val="{{ false }}">
+              <div style="animation:tc-rise .2s ease">
+                <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Step three</div>
+                <h3 style="margin:5px 0 6px">Where are you starting from?</h3>
+                <p style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 70%,transparent);margin:0 0 14px">One honest recent result beats a questionnaire. I will keep revising this from your runs either way.</p>
+
+                <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:10px">
+                  <div style="display:flex;gap:10px">
+                    <div class="field" style="flex:1"><label for="tc-dist">Recent race</label><input class="input" id="tc-dist" value="10 km" readonly></div>
+                    <div class="field" style="flex:1"><label for="tc-time">Time</label><input class="input" id="tc-time" value="41:59" readonly></div>
+                  </div>
+                  <div style="display:flex;gap:10px">
+                    <div class="field" style="flex:1"><label for="tc-vol">Weekly km now</label><input class="input" id="tc-vol" value="38" readonly></div>
+                    <div class="field" style="flex:1"><label for="tc-yrs">Years running</label><input class="input" id="tc-yrs" value="6" readonly></div>
+                  </div>
+                  <button class="btn btn-secondary" style="align-self:flex-start;font-size:12px">Import 18 months from my watch instead</button>
+                </div>
+
+                <div class="card elev-sm" style="gap:var(--space-2)">
+                  <div class="card-kicker" style="margin:0">What I take from that</div>
+                  <sc-for list="{{ fitnessReads }}" as="f" hint-placeholder-count="3">
+                    <div style="display:flex;gap:10px;padding:6px 0;font-size:12.5px;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                      <span style="flex:1;color:color-mix(in srgb,var(--color-text) 72%,transparent)">{{ f.k }}</span>
+                      <span style="font-variant-numeric:tabular-nums">{{ f.v }}</span>
+                      <span style="font-size:11px;color:var(--color-accent-300);width:58px;text-align:right">{{ f.conf }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ onb4 }}" hint-placeholder-val="{{ false }}">
+              <div style="animation:tc-rise .2s ease">
+                <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Step four</div>
+                <h3 style="margin:5px 0 6px">Here is the block I would run</h3>
+                <p style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 70%,transparent);margin:0 0 14px">14 weeks, 4 runs a week, Tuesday kept for your club session. Nothing here is fixed — I rewrite it as I learn.</p>
+
+                <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:10px">
+                  <div style="display:flex;gap:3px">
+                    <div style="flex:4;height:5px;border-radius:3px;background:var(--color-accent)"></div>
+                    <div style="flex:5;height:5px;border-radius:3px;background:#5d5294"></div>
+                    <div style="flex:3;height:5px;border-radius:3px;background:#423a6a"></div>
+                    <div style="flex:2;height:5px;border-radius:3px;background:#3f424d"></div>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent)">
+                    <span>Base 1–4</span><span>Build 5–9</span><span>Peak 10–12</span><span>Taper 13–14</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column">
+                    <sc-for list="{{ previewWeek }}" as="p" hint-placeholder-count="7">
+                      <div style="display:flex;align-items:center;gap:11px;padding:8px 0;font-size:12.5px;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                        <span style="width:26px;font-size:11px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">{{ p.day }}</span>
+                        <span style="width:3px;height:20px;border-radius:2px;background:{{ p.mark }};flex:none"></span>
+                        <span style="flex:1">{{ p.title }}</span>
+                        <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 66%,transparent);font-variant-numeric:tabular-nums">{{ p.meta }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <div class="card elev-sm" style="gap:var(--space-2);margin-bottom:12px">
+                  <div class="card-kicker" style="margin:0">Where I'm guessing</div>
+                  <div style="display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 82%,transparent)">
+                    <div>Your threshold is estimated from one 10 km — expect me to revise it inside three weeks.</div>
+                    <div>I don't know how you recover yet, so week 1 is deliberately conservative.</div>
+                    <div>Connect a watch whenever you like; without it I plan on your feedback alone.</div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <sc-if value="{{ onbBack }}" hint-placeholder-val="{{ false }}">
+                <button class="btn btn-secondary" onClick="{{ onbPrev }}">Back</button>
+              </sc-if>
+              <button class="btn btn-primary" style="flex:1" onClick="{{ onbNext }}">{{ onbCta }}</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Profile</div>
+            <div style="display:flex;align-items:center;gap:12px;margin:8px 0 16px">
+              <div style="width:46px;height:46px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:16px;color:#d2cefd;background:var(--color-accent-800);box-shadow:0 0 0 1px var(--color-accent-700)">MK</div>
+              <div style="flex:1;min-width:0">
+                <h3 style="margin:0">Mara Kessler</h3>
+                <div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-top:2px">Rotterdam Half · 12 April · 49 days out</div>
+              </div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:10px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between">
+                <div class="card-kicker" style="margin:0">Zones &amp; thresholds</div>
+                <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">TC set these · 18 Feb</span>
+              </div>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ thresholds }}" as="t" hint-placeholder-count="4">
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;font-size:12.5px;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                    <span style="color:color-mix(in srgb,var(--color-text) 68%,transparent)">{{ t.k }}</span>
+                    <span style="display:flex;gap:9px;align-items:baseline"><span style="font-variant-numeric:tabular-nums">{{ t.v }}</span><span style="font-size:11px;color:var(--color-accent-300);width:64px;text-align:right;white-space:nowrap">{{ t.src }}</span></span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:2px">
+                <div style="flex:5;height:6px;border-radius:3px 0 0 3px;background:#3f424d"></div>
+                <div style="flex:4;height:6px;background:#423a6a"></div>
+                <div style="flex:3;height:6px;background:#5d5294"></div>
+                <div style="flex:2;height:6px;background:#9184d9"></div>
+                <div style="flex:1;height:6px;border-radius:0 3px 3px 0;background:#d2cefd"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 62%,transparent)"><span>Z1</span><span>Z2</span><span>Z3</span><span>Z4</span><span>Z5</span></div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-secondary" style="font-size:12px" onClick="{{ goModel }}">Why these numbers</button>
+                <button class="btn btn-ghost" style="font-size:12px">Override</button>
+              </div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2);margin-bottom:10px">
+              <div class="card-kicker" style="margin:0">Devices</div>
+              <sc-for list="{{ devices }}" as="d" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:10px;padding:7px 0;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                  <div style="width:6px;height:6px;border-radius:50%;background:{{ d.dot }};flex:none"></div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13px">{{ d.name }}</div>
+                    <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 64%,transparent);margin-top:2px">{{ d.state }}</div>
+                  </div>
+                  <span style="font-size:11.5px;color:var(--color-accent-300)">{{ d.action }}</span>
+                </div>
+              </sc-for>
+              <div style="font-size:11.5px;line-height:1.5;color:color-mix(in srgb,var(--color-text) 64%,transparent)">TC reads whatever you connect and works without any of it — the watch records, the app decides.</div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2);margin-bottom:10px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between">
+                <div class="card-kicker" style="margin:0">Constraints</div>
+                <span style="font-size:11.5px;color:var(--color-accent-300)">Edit</span>
+              </div>
+              <sc-for list="{{ constraints }}" as="c" hint-placeholder-count="5">
+                <div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:12.5px;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                  <span style="color:color-mix(in srgb,var(--color-text) 68%,transparent)">{{ c.k }}</span>
+                  <span style="text-align:right">{{ c.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2);margin-bottom:10px">
+              <div class="card-kicker" style="margin:0">Race calendar</div>
+              <sc-for list="{{ races }}" as="r" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:10px;padding:7px 0;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                  <span class="tag" style="font-size:9.5px;padding:2px 6px;background:{{ r.bg }};color:{{ r.fg }};box-shadow:{{ r.ring }}">{{ r.grade }}</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13px">{{ r.name }}</div>
+                    <div style="font-size:11px;color:color-mix(in srgb,var(--color-text) 64%,transparent);margin-top:2px">{{ r.role }}</div>
+                  </div>
+                  <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 66%,transparent);font-variant-numeric:tabular-nums">{{ r.date }}</span>
+                </div>
+              </sc-for>
+              <button class="btn btn-secondary" style="align-self:flex-start;font-size:12px">Add a race</button>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2);margin-bottom:10px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between">
+                <div class="card-kicker" style="margin:0">TC's learning log</div>
+                <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">4 changes this block</span>
+              </div>
+              <sc-for list="{{ learnLog }}" as="l" hint-placeholder-count="3">
+                <div style="display:flex;gap:10px;padding:6px 0;font-size:12.5px;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                  <span style="width:44px;flex:none;font-size:11px;color:var(--color-accent-300)">{{ l.date }}</span>
+                  <span style="flex:1;line-height:1.45">{{ l.what }}</span>
+                </div>
+              </sc-for>
+              <button class="btn btn-secondary" style="align-self:flex-start;font-size:12px" onClick="{{ goModel }}">See the full model</button>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2);margin-bottom:10px">
+              <div class="card-kicker" style="margin:0">Preferences</div>
+              <sc-for list="{{ prefs }}" as="p" hint-placeholder-count="4">
+                <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12.5px;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                  <span style="color:color-mix(in srgb,var(--color-text) 68%,transparent)">{{ p.k }}</span>
+                  <span>{{ p.v }}</span>
+                </div>
+              </sc-for>
+              <button class="btn btn-secondary" style="align-self:flex-start;font-size:12px" onClick="{{ goNotifs }}">Notifications</button>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2)">
+              <div class="card-kicker" style="margin:0">Your data</div>
+              <div style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Your runs train your plan and nothing else. TC's model of you is not shared, sold or pooled with other runners.</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-secondary" style="font-size:12px">Export everything</button>
+                <button class="btn btn-ghost" style="font-size:12px;color:#d2cefd">Delete account</button>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isNotifs }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <button class="btn btn-ghost" style="padding:2px 0;font-size:12px;margin-bottom:10px" onClick="{{ goProfile }}">‹ Profile</button>
+            <div style="font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--color-accent)">Notifications</div>
+            <h3 style="margin:5px 0 6px">What TC sends you</h3>
+            <p style="font-size:12.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 70%,transparent);margin:0 0 14px">Five kinds, no streaks and no nagging. TC only pings you when the plan changed or it needs an answer.</p>
+
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+              <sc-for list="{{ notifPreviews }}" as="n" hint-placeholder-count="5">
+                <div style="border-radius:var(--radius-md);padding:10px 12px;background:color-mix(in srgb,#e9e9ed 9%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,#e9e9ed 10%,transparent);backdrop-filter:blur(6px)">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="width:16px;height:16px;border-radius:4px;background:var(--color-accent-800);box-shadow:0 0 0 1px var(--color-accent-700);flex:none"></div>
+                    <span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent);flex:1">TCs Trainer · {{ n.kind }}</span>
+                    <span style="font-size:10.5px;color:color-mix(in srgb,var(--color-text) 60%,transparent);font-variant-numeric:tabular-nums">{{ n.at }}</span>
+                  </div>
+                  <div style="font-size:13px;margin-top:7px">{{ n.title }}</div>
+                  <div style="font-size:12.5px;line-height:1.5;margin-top:3px;color:color-mix(in srgb,var(--color-text) 76%,transparent)">{{ n.body }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2);margin-bottom:10px">
+              <div class="card-kicker" style="margin:0">Send me</div>
+              <sc-for list="{{ notifToggles }}" as="t" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:12px;padding:8px 0;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13px">{{ t.label }}</div>
+                    <div style="font-size:11px;line-height:1.45;color:color-mix(in srgb,var(--color-text) 64%,transparent);margin-top:2px">{{ t.note }}</div>
+                  </div>
+                  <button style="width:38px;height:22px;border-radius:11px;border:0;flex:none;cursor:pointer;padding:0;display:flex;align-items:center;background:{{ t.trackBg }};box-shadow:{{ t.trackRing }};justify-content:{{ t.knobPos }}" onClick="{{ t.toggle }}">
+                    <span style="width:16px;height:16px;border-radius:50%;margin:0 3px;background:{{ t.knobBg }};display:block"></span>
+                  </button>
+                </div>
+              </sc-for>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2)">
+              <div class="card-kicker" style="margin:0">Timing</div>
+              <sc-for list="{{ notifTiming }}" as="t" hint-placeholder-count="3">
+                <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12.5px;background:linear-gradient(to right,transparent,color-mix(in srgb,var(--color-text) 8%,transparent) 20px,color-mix(in srgb,var(--color-text) 8%,transparent) calc(100% - 20px),transparent) no-repeat bottom/100% 1px">
+                  <span style="color:color-mix(in srgb,var(--color-text) 68%,transparent)">{{ t.k }}</span>
+                  <span style="font-variant-numeric:tabular-nums">{{ t.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+
+      <sc-if value="{{ showChrome }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;top:50px;right:16px;display:flex;gap:6px;align-items:center">
+          <button style="width:30px;height:30px;border-radius:50%;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,#e9e9ed 8%,transparent);color:{{ bellFg }};position:relative" onClick="{{ goNotifs }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10a5.5 5.5 0 0 1 11 0c0 4 1.5 5.5 1.5 5.5H5S6.5 14 6.5 10z"></path><path d="M10 18.5a2.2 2.2 0 0 0 4 0"></path></svg>
+            <span style="position:absolute;top:5px;right:6px;width:5px;height:5px;border-radius:50%;background:var(--color-accent)"></span>
+          </button>
+          <button style="width:30px;height:30px;border-radius:50%;border:0;cursor:pointer;font-family:var(--font-heading);font-size:11px;color:#d2cefd;background:var(--color-accent-800);box-shadow:{{ avatarRing }}" onClick="{{ goProfile }}">MK</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:8px 10px 26px;display:flex;align-items:center;background:linear-gradient(to top,#161826 62%,transparent);backdrop-filter:blur(8px)">
+        <button style="flex:1;background:transparent;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;font-family:inherit;color:{{ navToday }}" onClick="{{ goToday }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5"></circle><circle cx="12" cy="12" r="2.6"></circle></svg>
+          <span style="font-size:10.5px;letter-spacing:.03em">Today</span>
+        </button>
+        <button style="flex:1;background:transparent;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;font-family:inherit;color:{{ navPlan }}" onClick="{{ goPlan }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 10h17M8 3.5v3M16 3.5v3M8 14h3M8 17h6"></path></svg>
+          <span style="font-size:10.5px;letter-spacing:.03em">Plan</span>
+        </button>
+        <button style="flex:1;background:transparent;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;font-family:inherit;color:{{ navProgress }}" onClick="{{ goProgress }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19.5V13M12 19.5V7.5M19 19.5V10.5"></path></svg>
+          <span style="font-size:10.5px;letter-spacing:.03em">Progress</span>
+        </button>
+        <button style="flex:1;background:transparent;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;font-family:inherit;color:{{ navChat }}" onClick="{{ goChat }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.4 3.6a.6.6 0 0 1-1-.46V16A2 2 0 0 1 4 14z"></path></svg>
+          <span style="font-size:10.5px;letter-spacing:.03em">TC</span>
+        </button>
+        <button style="flex:1;background:transparent;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;font-family:inherit;color:{{ navModel }}" onClick="{{ goModel }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a4 4 0 0 1 4 4v1.2a3.3 3.3 0 0 1 0 6.1V17a2.5 2.5 0 0 1-2.5 2.5h-3A2.5 2.5 0 0 1 8 17v-1.2a3.3 3.3 0 0 1 0-6.1V8.5a4 4 0 0 1 4-4z"></path><path d="M12 4.5v15"></path></svg>
+          <span style="font-size:10.5px;letter-spacing:.03em">Model</span>
+        </button>
+      </div>
+      </sc-if>
+
+    </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:800,&quot;height&quot;:990},&quot;defaultDensity&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Full&quot;,&quot;Simple&quot;],&quot;default&quot;:&quot;Full&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behaviour&quot;},&quot;readiness&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:40,&quot;max&quot;:99,&quot;step&quot;:1,&quot;default&quot;:78,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Behaviour&quot;},&quot;showOpenQuestions&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behaviour&quot;}}">
+const MUTED = 'color-mix(in srgb, #e9e9ed 72%, transparent)';
+const ACCENT = '#9184d9';
+const DIM = 'color-mix(in srgb, #e9e9ed 66%, transparent)';
+
+const RX_FULL = [
+  { k: 'Volume', v: '11.2 km · 58 min' },
+  { k: 'Intensity', v: 'Z4 · 88–91% HRmax' },
+  { k: 'Target HR', v: '164–171 bpm' },
+  { k: 'Planned load', v: '78 TSS · wk 412' },
+  { k: 'RPE ceiling', v: '7 of 10' },
+];
+const RX_SIMPLE = [
+  { k: 'Volume', v: '11.2 km · 58 min' },
+  { k: 'Effort', v: 'Comfortably hard' },
+];
+
+const AMENDS = [
+  {
+    re: /40|35|30|short|time|rush/,
+    title: '2 × 8 min @ 4:35/km · 42 min total',
+    text: 'Dropped the third rep and shortened the warm-up to 10 min. Threshold time falls from 24 to 16 min, so this week lands at 398 load instead of 412 — acceptable. The third rep was the one carrying the adaptation, so I will add it back on Saturday as a 5 km tempo finish.',
+  },
+  {
+    re: /flat|tired|sore|heavy|rough|bad sleep/,
+    title: '50 min easy @ 5:30/km',
+    text: 'Threshold moves to Saturday. Flat legs on the morning of a key session usually means incomplete recovery rather than lost fitness — your HRV supports that. Running it anyway would cost two days for no adaptation.',
+  },
+  {
+    re: /tomorrow|move|later|shift|busy/,
+    title: 'Thursday easy 45 min · tempo Friday 06:30',
+    text: 'Flipped Thursday and Friday. Saturday\'s long run shifts to 08:00 so you keep 22 hours between quality sessions — below that the long run degrades.',
+  },
+  {
+    re: /treadmill|indoor|rain|track/,
+    title: '3 × 8 min @ 1.5% incline, 4:40/km',
+    text: 'Treadmill pace adjusted 5 s/km for the missing air resistance, incline at 1.5% so the mechanics stay honest. Keep the HR window — it is the target, not the pace.',
+  },
+];
+
+const CHAT_SEED = [
+  { from: 'tc', text: "Morning. Threshold 3 × 8 min at 4:35/km is on your Today screen — HRV is +4 on baseline, so I kept the full session." },
+  { from: 'me', text: 'Why 8 minute reps and not 5 × 5?' },
+  { from: 'tc', text: "Because your third rep is where you fade, not your first. Shorter reps would let you hold pace and learn nothing. Eight minutes puts you under sustained strain at a pace you can actually keep, which is the specific demand of a half marathon.\n\nIf you'd rather have 5 × 5, say so — it costs about 4 minutes of threshold time and I'd add them back Saturday." },
+];
+
+const CHAT = [
+  { re: /easy|slow|too hard|pace ceiling/, a: "Your last four easy runs averaged 5:21/km against a 5:30 prescription, and heart-rate drift across them was 1.4%. That is not overreaching — that is a ceiling I set too low from an old 10 km. Tell me it felt easy and I will move easy pace to 5:25/km." },
+  { re: /goal|1:29|time|predict|realistic/, a: "1:29:30 is live. Your own threshold curve puts you at 1:28:58 today, and you crossed the goal line in week 6 of this block. The risk is not fitness, it is the last two weeks — most people I plan for lose 20 seconds by over-running the taper." },
+  { re: /skip|miss|holiday|travel|sick/, a: "One missed session costs you almost nothing; I rebuild the week around it. Three in a row and I shorten the peak phase rather than compress it, because compressed peaks are where injuries come from. Tell me the dates and I will show you both versions." },
+  { re: /injur|pain|hurt|niggle|knee|achilles/, a: "Stop the session and tell me where. I will drop intensity for 72 hours and replace threshold with cross-training you already do, then bring load back at 70%. I do not diagnose — if it is sharp or it changes your gait, that is a physio, not me." },
+  { re: /long run|saturday|18 km/, a: "Saturday is 18 km at 5:25/km with no fast finish, 112 load. It sits 48 hours after today deliberately. If today's session goes badly I will cut it to 15 km — the long run is the session I protect last, not first." },
+  { re: /taper|race week|race day/, a: "Two weeks: volume drops 35% then 55%, intensity stays. You will feel sluggish in the first taper week — that is normal and I will remind you when it happens so you don't panic and add a session." },
+];
+
+class Component extends DCLogic {
+  state = {
+    tab: 'today', full: true, amendOpen: false, amendDraft: '', amendThinking: false,
+    amendReply: '', amendRxTitle: '', accepted: false, sent: false,
+    blockOpen: true, answered: [], openBelief: 0,
+    chatDraft: '', chatThinking: false, chatLog: null,
+    notifs: ['Morning brief', 'Plan changes', 'Analysis ready', "TC's questions", 'Weekly review'],
+    onbStep: 1, offDays: ['Mon'], timeCap: '60 min', cross: ['Strength'], goalKind: 'Race',
+  };
+
+  chatReply(text) {
+    const q = text.toLowerCase();
+    const found = CHAT.find(c => c.re.test(q));
+    return found ? found.a : "I can answer that better with one more data point — run Saturday as prescribed and ask me again Sunday. Everything I say is inferred from your own runs, so when I don't have the evidence I would rather say so than invent a number.";
+  }
+
+  sendChatText(text) {
+    if (!text.trim()) return;
+    const log = (this.state.chatLog || CHAT_SEED).concat([{ from: 'me', text: text.trim() }]);
+    this.setState({ chatLog: log, chatDraft: '', chatThinking: true });
+    setTimeout(() => {
+      this.setState(p => ({
+        chatThinking: false,
+        chatLog: (p.chatLog || []).concat([{ from: 'tc', text: this.chatReply(text) }]),
+      }));
+    }, 1100);
+  }
+
+  componentDidMount() {
+    try {
+      const saved = localStorage.getItem('tct.density');
+      if (saved === 'simple') this.setState({ full: false });
+      else if (saved === 'full') this.setState({ full: true });
+      else if (this.props.defaultDensity === 'Simple') this.setState({ full: false });
+    } catch (e) { /* storage unavailable */ }
+  }
+
+  setDensity(full) {
+    this.setState({ full });
+    try { localStorage.setItem('tct.density', full ? 'full' : 'simple'); } catch (e) { /* ignore */ }
+  }
+
+  amendFor(text) {
+    const q = text.toLowerCase();
+    return AMENDS.find(a => a.re.test(q)) || {
+      title: '3 × 8 min @ 4:35/km · unchanged',
+      text: 'Nothing in that changes the physiology of today, so the prescription holds. If it turns out to be more than it sounds, tell me mid-session and I will rebuild the rest of the week from what you actually ran.',
+    };
+  }
+
+  sendAmendText(text) {
+    if (!text.trim()) return;
+    this.setState({ amendThinking: true, amendOpen: false, amendDraft: text });
+    setTimeout(() => {
+      const a = this.amendFor(text);
+      this.setState({ amendThinking: false, amendReply: a.text, amendRxTitle: a.title });
+    }, 1000);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const readiness = this.props.readiness ?? 78;
+    const showQ = this.props.showOpenQuestions ?? true;
+    const active = s.tab;
+    const nav = id => (active === id ? ACCENT : MUTED);
+
+    const allQ = [
+      {
+        id: 'q1',
+        text: "Tuesday's easy run came in 9 s/km fast. Deliberate, or did it genuinely feel easy?",
+        answers: ['Felt easy', 'Ran it too hard'],
+        ack: 'Noted — if it felt easy at 5:21/km your easy ceiling has moved, so I am raising easy pace to 5:25/km and will watch HR drift on Saturday before committing.',
+      },
+      {
+        id: 'q2',
+        text: "I don't have a long-run window for Saturday. Confirm 07:00 or later?",
+        answers: ['07:00', '09:30', 'Sunday instead'],
+        ack: 'Saturday 07:00 locked. That keeps 22 hours from today\'s threshold work, which is the minimum I plan around.',
+      },
+    ];
+    const pending = allQ.filter(q => !s.answered.includes(q.id));
+    const lastAck = s.answered.length ? (allQ.find(q => q.id === s.answered[s.answered.length - 1]) || {}).ack : '';
+
+    const accepted = s.accepted;
+    const rxRows = s.full ? RX_FULL : RX_SIMPLE;
+
+    const beliefs = [
+      {
+        claim: 'Your threshold sits at 4:35/km, held for 24 minutes.',
+        confidence: 'High confidence',
+        revised: 'Revised 18 Feb',
+        history: [
+          { date: '18 Feb', what: 'Raised from 4:41 to 4:35/km.', why: 'Three sessions at 4:36–4:38 with HR under 169 and decoupling below 4%.' },
+          { date: '6 Jan', what: 'Raised from 4:47 to 4:41/km.', why: 'Week 5 tempo held 4:43 at the same HR as week 1 held 4:52.' },
+          { date: '2 Dec', what: 'First estimate: 4:47/km.', why: 'Taken from the 41:59 10K you entered at setup.' },
+        ],
+      },
+      {
+        claim: 'Your third rep is the limiter, not your top-end speed.',
+        confidence: 'High confidence',
+        revised: 'Revised 12 Feb',
+        history: [
+          { date: '12 Feb', what: 'Confirmed across four blocks.', why: 'Rep 3 pace falls 5–7 s/km while HR keeps climbing; reps 1–2 are stable. Duration work outranks pace work for you.' },
+          { date: '14 Jan', what: 'First noticed.', why: 'Two consecutive tempo sessions faded in the final rep only.' },
+        ],
+      },
+      {
+        claim: 'You recover fully in 48 hours after threshold work.',
+        confidence: 'Medium confidence',
+        revised: 'Revised 26 Feb',
+        history: [
+          { date: '26 Feb', what: 'Downgraded to medium.', why: 'Two of the last five 48-hour windows came back with HRV still below baseline. Travel is the common factor and I cannot see your calendar.' },
+          { date: '9 Jan', what: 'Set at 48 hours.', why: 'HRV returned to baseline within two days on six of six occasions.' },
+        ],
+      },
+      {
+        claim: 'You run easy days too hard when you feel good.',
+        confidence: 'Low confidence — needs your input',
+        revised: 'Open question',
+        history: [
+          { date: '26 Feb', what: 'Flagged, not yet a belief.', why: 'Three easy runs this block landed 8–11 s/km faster than prescribed. I do not know whether that is discipline or a moved easy ceiling — that is the question on your Today screen.' },
+        ],
+      },
+    ];
+
+    return {
+      isToday: s.tab === 'today', isPlan: s.tab === 'plan',
+      isProgress: s.tab === 'progress', isModel: s.tab === 'model',
+      isChat: s.tab === 'chat', isAnalysis: s.tab === 'analysis', isOnboard: s.tab === 'onboard',
+      isProfile: s.tab === 'profile', isNotifs: s.tab === 'notifs',
+      showNav: s.tab !== 'onboard',
+      showChrome: s.tab !== 'onboard' && s.tab !== 'notifs',
+      navChat: nav('chat'),
+      goChat: () => this.setState({ tab: 'chat' }),
+      goProfile: () => this.setState({ tab: 'profile' }),
+      goNotifs: () => this.setState({ tab: 'notifs' }),
+      padTop: (s.tab === 'onboard' || s.tab === 'notifs') ? '58px' : '94px',
+      bellFg: MUTED,
+      avatarRing: s.tab === 'profile' ? '0 0 0 1px ' + ACCENT : '0 0 0 1px var(--color-accent-700)',
+
+      thresholds: [
+        { k: 'Threshold pace', v: '4:35 /km', src: 'Inferred' },
+        { k: 'Threshold HR', v: '171 bpm', src: 'Inferred' },
+        { k: 'Max HR seen', v: '189 bpm', src: 'Measured' },
+        { k: 'Easy ceiling', v: '5:30 /km', src: 'In review' },
+        { k: 'Resting HR / HRV', v: '44 · 58 ms', src: '30-day' },
+      ],
+      devices: [
+        { name: 'Garmin Forerunner 965', state: 'Synced 07:12 · workouts push to watch', action: 'Manage', dot: ACCENT },
+        { name: 'Strava', state: 'Runs import automatically', action: 'Manage', dot: ACCENT },
+        { name: 'Apple Health', state: 'Sleep and HRV only · not connected', action: 'Connect', dot: '#3f424d' },
+      ],
+      constraints: [
+        { k: "Can't run", v: 'Mondays' },
+        { k: 'Max on a weekday', v: '60 min' },
+        { k: 'Long run', v: 'Saturday, 07:00' },
+        { k: 'Cross-training counted', v: 'Strength ×2' },
+        { k: 'Recurring', v: 'Club session Tue 19:00' },
+      ],
+      races: [
+        { grade: 'A', name: 'Rotterdam Half Marathon', role: 'Goal 1:29:30 · this block points here', date: '12 Apr', bg: 'var(--color-accent-800)', fg: '#d2cefd', ring: '0 0 0 1px ' + ACCENT },
+        { grade: 'B', name: 'Zuiderpark 15 km', role: 'Tune-up · run at half effort', date: '22 Mar', bg: 'transparent', fg: MUTED, ring: '0 0 0 1px var(--color-divider)' },
+        { grade: 'C', name: 'Club 10 km time trial', role: 'Optional · TC will fold it into a week', date: '17 May', bg: 'transparent', fg: MUTED, ring: '0 0 0 1px var(--color-divider)' },
+      ],
+      learnLog: [
+        { date: '26 Feb', what: 'Downgraded 48-hour recovery to medium confidence after two slow rebounds.' },
+        { date: '18 Feb', what: 'Raised threshold pace from 4:41 to 4:35/km.' },
+        { date: '12 Feb', what: 'Confirmed rep three is your limiter, so duration work outranks pace work.' },
+      ],
+      prefs: [
+        { k: 'Units', v: 'Kilometres' },
+        { k: 'Pace shown as', v: 'min / km' },
+        { k: 'Week starts', v: 'Monday' },
+        { k: 'Default detail', v: s.full ? 'Full' : 'Simple' },
+      ],
+      notifPreviews: [
+        { kind: 'Morning brief', at: '06:10', title: 'Threshold 3 × 8 min at 4:35/km', body: 'HRV +4 on baseline and you slept 7:12 — full session stands.' },
+        { kind: 'Plan changed', at: 'Wed 05:58', title: "Wednesday's intervals are now a recovery run", body: 'You flew Tuesday night and slept 5:40. The intervals move to Thursday.' },
+        { kind: 'Analysis ready', at: 'Tue 07:41', title: 'Tuesday easy 8 km — 9 s/km fast, drift 1.4%', body: "Worth a look: this one is making me question your easy ceiling." },
+        { kind: 'Question', at: 'Tue 08:05', title: 'Did that run feel easy, or did you push it?', body: 'Your answer decides whether Saturday gets faster.' },
+        { kind: 'Weekly review', at: 'Sun 19:00', title: 'Week 6: 52 km, every session completed', body: 'Fitness up 4, form +7. Next week is the biggest of the block.' },
+      ],
+      notifToggles: [
+        ['Morning brief', "The day's prescription, before you get up"],
+        ['Plan changes', 'Only when TC rewrites something you were expecting'],
+        ['Analysis ready', 'When a run has something worth reading'],
+        ["TC's questions", 'When an answer would change the plan'],
+        ['Weekly review', 'Sunday evening summary'],
+      ].map(([label, note]) => {
+        const on = s.notifs.includes(label);
+        return {
+          label, note,
+          trackBg: on ? 'var(--color-accent-700)' : 'color-mix(in srgb,#e9e9ed 10%,transparent)',
+          trackRing: on ? '0 0 0 1px ' + ACCENT : '0 0 0 1px var(--color-divider)',
+          knobBg: on ? '#d2cefd' : MUTED,
+          knobPos: on ? 'flex-end' : 'flex-start',
+          toggle: () => this.setState(p => ({ notifs: on ? p.notifs.filter(n => n !== label) : p.notifs.concat([label]) })),
+        };
+      }),
+      notifTiming: [
+        { k: 'Morning brief at', v: '06:10' },
+        { k: 'Quiet hours', v: '21:30 – 05:45' },
+        { k: 'Weekly review', v: 'Sunday 19:00' },
+      ],
+      closeAnalysis: () => this.setState({ tab: 'plan' }),
+      openAnalysis: () => this.setState({ tab: 'analysis' }),
+
+      chat: (s.chatLog || CHAT_SEED).map(m => ({
+        text: m.text,
+        align: m.from === 'me' ? 'flex-end' : 'flex-start',
+        bg: m.from === 'me' ? 'var(--color-accent-800)' : 'var(--color-surface, #1d1f2e)',
+        ring: m.from === 'me' ? '0 0 0 1px var(--color-accent-700)' : '0 0 0 1px var(--color-divider)',
+        fg: '#e9e9ed',
+      })),
+      chatThinking: s.chatThinking,
+      chatDraft: s.chatDraft,
+      onChatDraft: e => this.setState({ chatDraft: e.target.value }),
+      onChatKey: e => { if (e.key === 'Enter') this.sendChatText(e.target.value); },
+      sendChat: () => this.sendChatText(this.state.chatDraft),
+      chatPrompts: ['Am I running easy days too hard?', 'Is 1:29:30 still realistic?', 'What if I miss next week?', 'Why this long run?']
+        .map(label => ({ label, pick: () => this.sendChatText(label) })),
+
+      runStats: [
+        { k: 'Avg pace', v: '5:21 /km', fg: ACCENT },
+        { k: 'Prescribed', v: '5:30 /km', fg: '#e9e9ed' },
+        { k: 'Avg HR', v: '147 bpm', fg: '#e9e9ed' },
+        { k: 'HR drift', v: '1.4%', fg: ACCENT },
+        { k: 'Load', v: '46 · planned 42', fg: '#e9e9ed' },
+        { k: 'Cadence', v: '178 spm', fg: '#e9e9ed' },
+      ],
+      timeline: [
+        { at: '0:00', label: 'Warm-up, first 1.5 km', metric: '5:34 · 138', note: 'You started this one right — 5:34 for the opening kilometre is exactly the ceiling I asked for.' },
+        { at: '8:12', label: 'Km 2–4, flat river path', metric: '5:21 · 146', note: 'Pace stepped up 13 s/km here and never came back down. HR followed within a minute, so this was effort, not a downhill.' },
+        { at: '22:40', label: 'Climb out of the park', metric: '5:40 · 152', note: '' },
+        { at: '26:05', label: 'Km 6–7, fastest stretch', metric: '5:18 · 149', note: "Drift across this stretch is 1.4% — barely measurable. That is the reading that makes me doubt my own easy-pace ceiling rather than your discipline." },
+        { at: '38:20', label: 'Cool-down to the door', metric: '5:26 · 147', note: '' },
+      ],
+
+      onbDots: [1, 2, 3, 4].map(n => ({ bg: n <= s.onbStep ? ACCENT : '#3f424d' })),
+      onbCount: 'Step ' + s.onbStep + ' of 4',
+      onb1: s.onbStep === 1, onb2: s.onbStep === 2, onb3: s.onbStep === 3, onb4: s.onbStep === 4,
+      onbBack: s.onbStep > 1,
+      onbCta: s.onbStep === 4 ? 'Start this plan' : 'Continue',
+      onbPrev: () => this.setState(p => ({ onbStep: Math.max(1, p.onbStep - 1) })),
+      onbNext: () => this.setState(p => (p.onbStep === 4 ? { tab: 'today', onbStep: 1 } : { onbStep: p.onbStep + 1 })),
+      startOnboard: () => this.setState({ tab: 'onboard', onbStep: 1 }),
+      goalKinds: ['Race', 'Distance goal', 'Just consistent'].map(label => ({
+        label,
+        fg: s.goalKind === label ? ACCENT : MUTED,
+        ring: s.goalKind === label ? 'inset 0 0 0 1px ' + ACCENT : 'none',
+        pick: () => this.setState({ goalKind: label }),
+      })),
+      goalNote: s.goalKind === 'Race'
+        ? '14 weeks out. That is enough for a full base, build and peak with two weeks of taper — no compression needed.'
+        : s.goalKind === 'Distance goal'
+          ? "No date means no taper to plan, so I will run rolling four-week cycles and hold you at the same load until you tell me otherwise."
+          : "Then I will keep you honest rather than fast: three or four easy runs a week, one of them slightly harder, and I will not ramp you past 8% a week.",
+      offDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(label => {
+        const on = s.offDays.includes(label);
+        return {
+          label,
+          bg: on ? 'var(--color-accent-800)' : 'transparent',
+          fg: on ? '#d2cefd' : MUTED,
+          ring: on ? '0 0 0 1px ' + ACCENT : '0 0 0 1px var(--color-divider)',
+          pick: () => this.setState(p => ({ offDays: on ? p.offDays.filter(d => d !== label) : p.offDays.concat([label]) })),
+        };
+      }),
+      timeCaps: ['45 min', '60 min', '90 min', 'No cap'].map(label => ({
+        label,
+        fg: s.timeCap === label ? ACCENT : MUTED,
+        ring: s.timeCap === label ? 'inset 0 0 0 1px ' + ACCENT : 'none',
+        pick: () => this.setState({ timeCap: label }),
+      })),
+      crossOpts: ['Bike', 'Swim', 'Strength', 'Climbing'].map(label => {
+        const on = s.cross.includes(label);
+        return {
+          label,
+          bg: on ? 'var(--color-accent-800)' : 'transparent',
+          fg: on ? '#d2cefd' : MUTED,
+          ring: on ? '0 0 0 1px ' + ACCENT : '0 0 0 1px var(--color-divider)',
+          pick: () => this.setState(p => ({ cross: on ? p.cross.filter(c => c !== label) : p.cross.concat([label]) })),
+        };
+      }),
+      constraintNote: s.offDays.length > 2
+        ? 'With ' + s.offDays.length + ' days out I will drop to three runs a week and make each one count rather than pretend you can fit four.'
+        : 'Four runs a week fits that. Your long run goes Saturday, quality Thursday, and I will keep Tuesday easy so your club session stays yours.',
+      fitnessReads: [
+        { k: 'Threshold pace', v: '4:47 /km', conf: 'Low' },
+        { k: 'Sustainable weekly load', v: '≈ 310', conf: 'Medium' },
+        { k: 'Safe ramp rate', v: '+6% /wk', conf: 'Medium' },
+        { k: 'Predicted half today', v: '1:33:40', conf: 'Low' },
+      ],
+      previewWeek: [
+        ['Mon', 'Rest', 'unavailable', '#3f424d'],
+        ['Tue', 'Club session — easy 8 km', '19:00', '#3f424d'],
+        ['Wed', 'Rest or strength', '30 min', '#3f424d'],
+        ['Thu', 'Threshold 4 × 6 min', '55 min', ACCENT],
+        ['Fri', 'Easy 6 km', '35 min', '#3f424d'],
+        ['Sat', 'Long run 14 km', '07:00', '#5d5294'],
+        ['Sun', 'Optional shake-out', '25 min', '#3f424d'],
+      ].map(([day, title, meta, mark]) => ({ day, title, meta, mark })),
+
+      goToday: () => this.setState({ tab: 'today' }),
+      goPlan: () => this.setState({ tab: 'plan' }),
+      goProgress: () => this.setState({ tab: 'progress' }),
+      goModel: () => this.setState({ tab: 'model' }),
+      navToday: nav('today'), navPlan: nav('plan'), navProgress: nav('progress'), navModel: nav('model'),
+
+      isFull: s.full,
+      simpleFg: s.full ? MUTED : ACCENT,
+      fullFg: s.full ? ACCENT : MUTED,
+      simpleRing: s.full ? 'none' : 'inset 0 0 0 1px ' + ACCENT,
+      fullRing: s.full ? 'inset 0 0 0 1px ' + ACCENT : 'none',
+      setSimple: () => this.setDensity(false),
+      setFull: () => this.setDensity(true),
+
+      rxTitle: accepted ? s.amendRxTitle.split(' · ')[0] : '3 × 8 min @ 4:35/km',
+      rxSub: accepted ? 'Revised at your request · ' + (s.amendRxTitle.split(' · ')[1] || '') : '3 min float · 15 min w/u · 10 min c/d',
+      rxRows: accepted ? [{ k: 'Volume', v: '8.1 km · 42 min' }, { k: 'Intensity', v: 'Z4 · 16 min at threshold' }, { k: 'Planned load', v: '64 TSS · wk 398' }] : rxRows,
+      revisedTag: accepted ? 'Amended 06:42' : 'Revised 06:10',
+      sendLabel: s.sent ? 'Sent to watch ✓' : 'Send to watch',
+      sendToWatch: () => this.setState({ sent: true }),
+
+      amendOpen: s.amendOpen,
+      amendDraft: s.amendDraft,
+      amendThinking: s.amendThinking,
+      amendReply: s.amendReply,
+      amendRxTitle: s.amendRxTitle,
+      toggleAmend: () => this.setState(p => ({ amendOpen: !p.amendOpen, amendReply: '' })),
+      onAmendDraft: e => this.setState({ amendDraft: e.target.value }),
+      sendAmend: () => this.sendAmendText(this.state.amendDraft),
+      amendPresets: ['Only have 40 minutes', 'Legs feel flat', 'Move it to tomorrow', 'Treadmill only']
+        .map(label => ({ label, pick: () => this.sendAmendText(label) })),
+      acceptAmend: () => this.setState({ accepted: true, amendReply: '', sent: false }),
+      discardAmend: () => this.setState({ amendReply: '', amendDraft: '' }),
+
+      basis: [
+        { val: 'HRV ' + (readiness > 70 ? '62 ms' : '54 ms'), note: readiness > 70 ? '+4 on your 30-day baseline' : '−4 on your 30-day baseline' },
+        { val: 'Sleep 7:12', note: '88% efficiency, two wakings' },
+        { val: '48 h', note: 'since last quality session' },
+      ],
+
+      questions: (showQ ? pending : []).map(q => ({
+        text: q.text,
+        answers: q.answers.map(label => ({
+          label,
+          pick: () => this.setState(p => ({ answered: p.answered.concat([q.id]) })),
+        })),
+      })),
+      qCount: showQ ? pending.length : 0,
+      qScope: pending.length ? 'Affects Saturday' : 'All answered',
+      qResolved: lastAck,
+
+      blockOpen: s.blockOpen,
+      blockToggle: s.blockOpen ? 'Collapse' : 'Expand',
+      toggleBlock: () => this.setState(p => ({ blockOpen: !p.blockOpen })),
+
+      sessions: [
+        ['Mon', 'Rest', 'Mobility 15 min', 'Logged', MUTED, '—', '#3f424d'],
+        ['Tue', 'Easy 8 km', 'Ran 5:21/km · analysis ready ›', 'Fast', '#d2cefd', '46', '#5d5294'],
+        ['Wed', 'Recovery 10 km', 'Rewritten from intervals', 'Logged', MUTED, '52', '#3f424d'],
+        ['Thu', 'Threshold 3 × 8 min', '4:35/km · 11.2 km', 'Today', ACCENT, '78', ACCENT],
+        ['Fri', 'Easy 45 min', '5:30/km', 'Planned', MUTED, '38', '#3f424d'],
+        ['Sat', 'Long run 18 km', '5:25/km, no fast finish', 'Planned', MUTED, '112', '#5d5294'],
+        ['Sun', 'Easy 6 km', 'Optional shake-out', 'Planned', MUTED, '28', '#3f424d'],
+      ].map(([day, title, detail, status, statusFg, load, mark]) => ({
+        day, title, detail, status, statusFg, load, mark,
+        fg: status === 'Today' ? ACCENT : '#e9e9ed',
+        cursor: day === 'Tue' ? 'pointer' : 'default',
+        open: day === 'Tue' ? () => this.setState({ tab: 'analysis' }) : undefined,
+      })),
+
+      bests: [
+        { dist: '5 km', time: '19:44', delta: '−22 s' },
+        { dist: '10 km', time: '41:08', delta: '−51 s' },
+        { dist: 'Half', time: '1:31:12', delta: 'Sept, pre-block' },
+      ],
+
+      beliefs: beliefs.map((b, i) => ({
+        ...b,
+        open: s.openBelief === i,
+        chev: s.openBelief === i ? '⌃' : '⌄',
+        toggle: () => this.setState(p => ({ openBelief: p.openBelief === i ? -1 : i })),
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>

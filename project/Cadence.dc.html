@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/nocturne-8eb4b3e4-52a2-4ce7-bc16-d3b21f7734ab/styles.css">
+<script src="_ds/nocturne-8eb4b3e4-52a2-4ce7-bc16-d3b21f7734ab/_ds_bundle.js"></script>
+<style>
+body{margin:0;background:#161826}
+.cd-scroll{scrollbar-width:none}
+.cd-scroll::-webkit-scrollbar{display:none}
+@keyframes cd-pulse{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes cd-rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="display:flex;gap:44px;align-items:flex-start;padding:44px;font-family:var(--font-body);color:var(--color-text);min-height:100vh;box-sizing:border-box">
+
+  <div style="width:320px;flex:none;display:flex;flex-direction:column;gap:18px">
+    <div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent);margin-bottom:8px">Concept · v1</div>
+      <h2 style="margin:0 0 6px">Cadence</h2>
+      <p style="margin:0;font-size:13px;color:color-mix(in srgb, var(--color-text) 60%, transparent)">An AI coach that writes tomorrow's session from how today actually went. Built on Nocturne — dark ground, accent as line and glow, outlined actions.</p>
+    </div>
+    <hr class="hr" style="margin:0">
+    <div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent);margin-bottom:10px">Assumptions I made</div>
+      <div style="display:flex;flex-direction:column;gap:9px;font-size:12.5px;line-height:1.5;color:color-mix(in srgb, var(--color-text) 75%, transparent)">
+        <div>Runner: intermediate, chasing a half-marathon PB on a 14-week block.</div>
+        <div>The AI's headline job is adaptation — it rewrites the week from recovery signals, and always shows its reasoning. No black box.</div>
+        <div>Wearable data (HRV, sleep) is already syncing, so onboarding is out of scope here.</div>
+        <div>Coach voice: warm but specific. Numbers, then a sentence a human would say.</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent);margin-bottom:10px">What's live in the prototype</div>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:12.5px;color:color-mix(in srgb, var(--color-text) 75%, transparent)">
+        <div>Tap the five tabs · Today explains its own session</div>
+        <div>Start a run — countdown, live pace, interval cues, finish</div>
+        <div>Post-run analysis with splits and what changes next</div>
+        <div>Ask the coach anything (try "I'm sore")</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent);margin-bottom:10px">Next steps</div>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:12.5px;color:color-mix(in srgb, var(--color-text) 75%, transparent)">
+        <div>Onboarding + race goal setup</div>
+        <div>Injury / missed-week recovery flow</div>
+        <div>Real map + elevation on the summary</div>
+      </div>
+    </div>
+  </div>
+
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+    <div style="height:100%;display:flex;flex-direction:column;background:var(--color-bg);font-family:var(--font-body);color:var(--color-text)">
+
+      <div class="cd-scroll" style="flex:1;overflow:auto;padding:58px 18px 108px">
+
+        <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px">
+              <div>
+                <div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--color-accent)">Thursday · week 7 of 14</div>
+                <h3 style="margin:5px 0 0">Morning, Maya</h3>
+              </div>
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--color-accent-800);color:var(--color-accent-100);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500">M</div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:16px">
+                <div style="position:relative;width:78px;height:78px;flex:none">
+                  <svg width="78" height="78" viewBox="0 0 78 78" style="transform:rotate(-90deg)">
+                    <circle cx="39" cy="39" r="33" fill="none" stroke="#3f424d" stroke-width="6"></circle>
+                    <circle cx="39" cy="39" r="33" fill="none" stroke="#9184d9" stroke-width="6" stroke-linecap="round" stroke-dasharray="{{ ringDash }}"></circle>
+                  </svg>
+                  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                    <div style="font-size:23px;font-weight:500;line-height:1;font-variant-numeric:tabular-nums">{{ readiness }}</div>
+                    <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent)">ready</div>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:7px;flex:1;min-width:0">
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px"><span class="text-muted">HRV</span><span style="font-variant-numeric:tabular-nums">62 ms · +4</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px"><span class="text-muted">Sleep</span><span style="font-variant-numeric:tabular-nums">7h 12m · 88%</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px"><span class="text-muted">Legs</span><span>Fresh-ish</span></div>
+                </div>
+              </div>
+              <button class="btn btn-ghost" style="align-self:flex-start;font-size:12px" onClick="{{ toggleWhy }}">How we got this →</button>
+              <sc-if value="{{ showWhy }}" hint-placeholder-val="{{ false }}">
+                <div style="border-top:1px solid var(--color-divider);padding-top:10px;font-size:12.5px;line-height:1.55;color:color-mix(in srgb, var(--color-text) 78%, transparent);animation:cd-rise .18s ease">
+                  HRV is 4 ms above your 30-day baseline and sleep held over seven hours, so autonomic recovery looks complete. Your last hard session was 48 hours ago and Tuesday's easy run came in 9 s/km slower than prescribed — the only reason this isn't a 90.
+                </div>
+              </sc-if>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="card-kicker" style="margin:0">Today's session</span>
+                <span class="tag tag-accent" style="font-size:9.5px;padding:2px 7px">Adapted 6:10 am</span>
+              </div>
+              <div class="card-title" style="font-size:19px">Tempo — 3 × 8 min @ 4:35/km</div>
+              <div style="display:flex;gap:7px;flex-wrap:wrap">
+                <span class="tag tag-neutral">58 min</span>
+                <span class="tag tag-neutral">11.2 km</span>
+                <span class="tag tag-neutral">Zone 4</span>
+                <span class="tag tag-outline">Key session</span>
+              </div>
+              <p style="margin:0;font-size:13px;line-height:1.55;color:color-mix(in srgb, var(--color-text) 80%, transparent)">{{ coachNote }}</p>
+              <div style="display:flex;gap:8px;margin-top:2px">
+                <button class="btn btn-primary" style="flex:1" onClick="{{ goRun }}">Start run</button>
+                <button class="btn btn-secondary" onClick="{{ toggleAdjust }}">Adjust</button>
+              </div>
+              <sc-if value="{{ adjustOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:7px;border-top:1px solid var(--color-divider);padding-top:10px;animation:cd-rise .18s ease">
+                  <div style="font-size:11.5px;color:color-mix(in srgb, var(--color-text) 60%, transparent)">Tell the coach and it rebuilds the week</div>
+                  <sc-for list="{{ adjustOptions }}" as="opt" hint-placeholder-count="3">
+                    <button class="btn btn-secondary btn-block" style="justify-content:flex-start;margin:0;font-weight:400" onClick="{{ opt.pick }}">{{ opt.label }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 66%, transparent);margin:18px 0 9px">This week</div>
+            <div style="display:flex;gap:6px;margin-bottom:12px">
+              <sc-for list="{{ week }}" as="d" hint-placeholder-count="7">
+                <div style="flex:1;border-radius:var(--radius-md);padding:8px 0;text-align:center;background:{{ d.bg }};box-shadow:{{ d.ring }}">
+                  <div style="font-size:9.5px;letter-spacing:.06em;color:color-mix(in srgb, var(--color-text) 70%, transparent)">{{ d.day }}</div>
+                  <div style="font-size:12.5px;margin-top:4px;color:{{ d.fg }}">{{ d.code }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <button class="card elev-sm" style="width:100%;text-align:left;border:0;cursor:pointer;flex-direction:row;align-items:center;gap:12px;font-family:inherit;color:inherit" style-hover="background:#2a2c3b;box-shadow:0 0 0 1px #595d6c" onClick="{{ goSummary }}">
+              <div style="flex:1">
+                <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 66%, transparent)">Tuesday · easy 8 km</div>
+                <div style="font-size:14px;margin-top:3px">Analysis ready — you ran it hot</div>
+              </div>
+              <div style="color:var(--color-accent);font-size:16px">›</div>
+            </button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isPlan }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--color-accent)">The block</div>
+            <h3 style="margin:5px 0 16px">Rotterdam Half</h3>
+
+            <div class="card elev-sm" style="margin-bottom:12px;gap:var(--space-3)">
+              <div style="display:flex;align-items:flex-end;justify-content:space-between">
+                <div>
+                  <div style="font-size:30px;font-weight:500;line-height:1;font-variant-numeric:tabular-nums">1:29:30</div>
+                  <div style="font-size:11.5px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-top:4px">Goal · 4:14/km</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:18px;font-weight:500;font-variant-numeric:tabular-nums">49 days</div>
+                  <div style="font-size:11.5px;color:color-mix(in srgb, var(--color-text) 55%, transparent)">12 Apr</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:3px;margin-top:2px">
+                <div style="flex:4;height:5px;border-radius:3px;background:var(--color-accent)"></div>
+                <div style="flex:5;height:5px;border-radius:3px;background:linear-gradient(to right,var(--color-accent) 60%,#3f424d 60%)"></div>
+                <div style="flex:3;height:5px;border-radius:3px;background:#3f424d"></div>
+                <div style="flex:2;height:5px;border-radius:3px;background:#3f424d"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 66%, transparent)">
+                <span>Base</span><span>Build</span><span>Peak</span><span>Taper</span>
+              </div>
+              <div style="font-size:12.5px;line-height:1.5;color:color-mix(in srgb, var(--color-text) 78%, transparent);border-top:1px solid var(--color-divider);padding-top:10px">Prediction from your last four weeks: <span style="color:var(--color-accent-300)">1:28:58</span>. You're 32 seconds ahead of the goal curve.</div>
+            </div>
+
+            <div class="card elev-sm" style="margin-bottom:12px;flex-direction:row;align-items:center;gap:10px">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--color-accent);animation:cd-pulse 2.4s infinite"></div>
+              <div style="flex:1;font-size:12.5px;line-height:1.45">Two sessions moved this week — Wednesday's intervals became a recovery run after your travel day.</div>
+              <button class="btn btn-ghost" style="font-size:12px">Undo</button>
+            </div>
+
+            <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 66%, transparent);margin:18px 0 6px">Week 7 · 52 km</div>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ sessions }}" as="s" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid color-mix(in srgb, var(--color-text) 8%, transparent)">
+                  <div style="width:26px;font-size:11px;letter-spacing:.06em;color:color-mix(in srgb, var(--color-text) 66%, transparent)">{{ s.day }}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13.5px;color:{{ s.fg }}">{{ s.title }}</div>
+                    <div style="font-size:11.5px;color:color-mix(in srgb, var(--color-text) 66%, transparent);margin-top:2px">{{ s.detail }}</div>
+                  </div>
+                  <div style="font-size:11px;color:{{ s.statusFg }}">{{ s.status }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isRunPre }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--color-accent)">Ready when you are</div>
+            <h3 style="margin:5px 0 18px">Tempo · 3 × 8 min</h3>
+            <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:22px">
+              <sc-for list="{{ steps }}" as="st" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-md);background:{{ st.bg }}">
+                  <div style="width:3px;height:26px;border-radius:2px;background:{{ st.mark }}"></div>
+                  <div style="flex:1;font-size:13.5px">{{ st.label }}</div>
+                  <div style="font-size:12.5px;font-variant-numeric:tabular-nums;color:color-mix(in srgb, var(--color-text) 60%, transparent)">{{ st.target }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:center;margin-bottom:20px">
+              <button style="width:168px;height:168px;border-radius:50%;background:transparent;border:1px solid var(--color-accent);color:var(--color-accent);font-family:var(--font-heading);font-size:17px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 44px color-mix(in srgb, var(--color-accent) 22%, transparent)" style-hover="background:color-mix(in srgb, var(--color-accent) 12%, transparent)" onClick="{{ startRun }}">Start</button>
+            </div>
+            <div class="card elev-sm" style="flex-direction:row;align-items:center;gap:12px">
+              <div style="flex:1;font-size:12.5px;line-height:1.45">Live cues — the coach speaks only when you drift more than 6 s/km.</div>
+              <div style="font-size:11px;color:var(--color-accent)">{{ cuesLabel }}</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isCounting }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:540px;gap:14px">
+            <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 50%, transparent)">Starting warm-up</div>
+            <div style="font-size:120px;font-weight:500;line-height:1;color:var(--color-accent);font-variant-numeric:tabular-nums;text-shadow:0 0 60px color-mix(in srgb, var(--color-accent) 35%, transparent)">{{ count }}</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isActive }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--color-accent);animation:cd-pulse 1.6s infinite"></div>
+              <div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 55%, transparent)">{{ phaseLabel }}</div>
+            </div>
+            <div style="font-size:66px;font-weight:500;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:-.02em">{{ paceStr }}</div>
+            <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 66%, transparent);margin-top:6px">min/km · target {{ targetPace }}</div>
+
+            <div style="display:flex;gap:10px;margin:22px 0 16px">
+              <div class="card elev-sm" style="flex:1;gap:2px">
+                <div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 66%, transparent)">Elapsed</div>
+                <div style="font-size:19px;font-variant-numeric:tabular-nums">{{ elapsedStr }}</div>
+              </div>
+              <div class="card elev-sm" style="flex:1;gap:2px">
+                <div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 66%, transparent)">Distance</div>
+                <div style="font-size:19px;font-variant-numeric:tabular-nums">{{ distStr }}</div>
+              </div>
+              <div class="card elev-sm" style="flex:1;gap:2px">
+                <div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 66%, transparent)">HR</div>
+                <div style="font-size:19px;font-variant-numeric:tabular-nums">{{ hr }}</div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:18px">
+              <div style="display:flex;justify-content:space-between;font-size:11.5px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:6px">
+                <span>{{ segLabel }}</span><span style="font-variant-numeric:tabular-nums">{{ segLeft }} left</span>
+              </div>
+              <div style="height:6px;border-radius:3px;background:#3f424d;overflow:hidden">
+                <div style="height:100%;border-radius:3px;background:var(--color-accent);width:{{ segPct }}%"></div>
+              </div>
+            </div>
+
+            <sc-if value="{{ showCue }}" hint-placeholder-val="{{ true }}">
+              <div class="card" style="background:var(--color-accent-900);box-shadow:0 0 0 1px var(--color-accent-700);gap:6px;margin-bottom:16px;animation:cd-rise .25s ease">
+                <div style="font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent-300)">Coach · live</div>
+                <div style="font-size:13.5px;line-height:1.45">{{ cueText }}</div>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary" style="flex:1" onClick="{{ pauseRun }}">Pause</button>
+              <button class="btn btn-primary" style="flex:1" onClick="{{ finishRun }}">Finish</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSummary }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--color-accent)">Session complete</div>
+            <h3 style="margin:5px 0 4px">Tempo · 3 × 8 min</h3>
+            <div style="font-size:12.5px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-bottom:16px">Thu 6:42 am · 11.2 km · 57:48</div>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:12px">
+              <div style="display:flex;align-items:baseline;gap:10px">
+                <div style="font-size:34px;font-weight:500;line-height:1;font-variant-numeric:tabular-nums">96<span style="font-size:16px;color:color-mix(in srgb, var(--color-text) 50%, transparent)">%</span></div>
+                <div style="font-size:12.5px;color:color-mix(in srgb, var(--color-text) 60%, transparent)">executed to target pace</div>
+              </div>
+              <svg viewBox="0 0 320 96" style="width:100%;height:96px;overflow:visible">
+                <line x1="0" y1="34" x2="320" y2="34" stroke="#9184d9" stroke-width="1" stroke-dasharray="3 4" opacity=".6"></line>
+                <g fill="#595d6c">
+                  <rect x="4" y="60" width="26" height="36" rx="3"></rect>
+                  <rect x="38" y="52" width="26" height="44" rx="3"></rect>
+                </g>
+                <g fill="#9184d9">
+                  <rect x="72" y="30" width="26" height="66" rx="3"></rect>
+                  <rect x="106" y="26" width="26" height="70" rx="3"></rect>
+                  <rect x="140" y="32" width="26" height="64" rx="3"></rect>
+                  <rect x="174" y="28" width="26" height="68" rx="3"></rect>
+                  <rect x="208" y="38" width="26" height="58" rx="3"></rect>
+                </g>
+                <g fill="#595d6c">
+                  <rect x="242" y="58" width="26" height="38" rx="3"></rect>
+                  <rect x="276" y="64" width="26" height="32" rx="3"></rect>
+                </g>
+              </svg>
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:color-mix(in srgb, var(--color-text) 66%, transparent)">
+                <span>Warm-up</span><span>Intervals 1–3</span><span>Cool-down</span>
+              </div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:12px">
+              <div class="card-kicker">What the coach saw</div>
+              <p style="margin:0;font-size:13px;line-height:1.6;color:color-mix(in srgb, var(--color-text) 82%, transparent)">Interval two was your best: 4:33/km at 168 bpm, four beats under where that pace sat six weeks ago. You faded 5 s/km in the third rep and heart rate kept climbing — that's the honest edge of your tempo fitness right now, not a bad day.</p>
+              <div style="display:flex;gap:10px;border-top:1px solid var(--color-divider);padding-top:10px">
+                <div style="flex:1"><div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 66%, transparent)">Avg HR</div><div style="font-size:15px;font-variant-numeric:tabular-nums">164</div></div>
+                <div style="flex:1"><div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 66%, transparent)">Drift</div><div style="font-size:15px;font-variant-numeric:tabular-nums">3.1%</div></div>
+                <div style="flex:1"><div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb, var(--color-text) 66%, transparent)">Load</div><div style="font-size:15px;font-variant-numeric:tabular-nums">78</div></div>
+              </div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2);margin-bottom:12px">
+              <div class="card-kicker">What changes next</div>
+              <div style="font-size:13px;line-height:1.55">Tomorrow drops to 45 min easy at 5:30/km, and Saturday's long run keeps its 18 km but loses the marathon-pace finish. Sunday is unchanged.</div>
+            </div>
+
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary" style="flex:1" onClick="{{ goToday }}">Done</button>
+              <button class="btn btn-primary" style="flex:1" onClick="{{ goCoach }}">Ask the coach</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isCoach }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+              <div style="width:28px;height:28px;border-radius:50%;box-shadow:0 0 0 1px var(--color-accent);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--color-accent)">C</div>
+              <div>
+                <div style="font-size:14px">Coach</div>
+                <div style="font-size:10.5px;color:color-mix(in srgb, var(--color-text) 66%, transparent)">Reads every run you've logged</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+              <sc-for list="{{ msgs }}" as="m" hint-placeholder-count="3">
+                <div style="align-self:{{ m.align }};max-width:82%;padding:10px 12px;border-radius:var(--radius-lg);font-size:13px;line-height:1.5;background:{{ m.bg }};box-shadow:{{ m.ring }};animation:cd-rise .2s ease">{{ m.text }}</div>
+              </sc-for>
+              <sc-if value="{{ typing }}" hint-placeholder-val="{{ false }}">
+                <div style="align-self:flex-start;padding:10px 14px;border-radius:var(--radius-lg);background:var(--color-surface);font-size:13px;color:color-mix(in srgb, var(--color-text) 50%, transparent);animation:cd-pulse 1.4s infinite">thinking…</div>
+              </sc-if>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+              <sc-for list="{{ prompts }}" as="p" hint-placeholder-count="3">
+                <button class="tag tag-outline" style="background:transparent;cursor:pointer;font-family:inherit" onClick="{{ p.pick }}">{{ p.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:8px">
+              <input class="input" placeholder="Ask about your training…" value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onKey }}">
+              <button class="btn btn-primary" onClick="{{ send }}">Send</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isProgress }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--color-accent)">Last 12 weeks</div>
+            <h3 style="margin:5px 0 16px">Progress</h3>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:12px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div class="card-kicker" style="margin:0">Fitness vs fatigue</div>
+                <div style="font-size:11px;color:color-mix(in srgb, var(--color-text) 50%, transparent)">Form +7</div>
+              </div>
+              <svg viewBox="0 0 320 120" style="width:100%;height:120px">
+                <defs>
+                  <linearGradient id="cdFit" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#9184d9" stop-opacity=".35"></stop>
+                    <stop offset="100%" stop-color="#9184d9" stop-opacity="0"></stop>
+                  </linearGradient>
+                </defs>
+                <path d="M0 96 L28 92 L56 86 L84 84 L112 74 L140 70 L168 58 L196 56 L224 44 L252 38 L280 30 L308 24 L308 120 L0 120 Z" fill="url(#cdFit)"></path>
+                <polyline points="0,96 28,92 56,86 84,84 112,74 140,70 168,58 196,56 224,44 252,38 280,30 308,24" fill="none" stroke="#9184d9" stroke-width="2" stroke-linejoin="round"></polyline>
+                <polyline points="0,104 28,98 56,100 84,90 112,94 140,82 168,86 196,72 224,78 252,62 280,70 308,58" fill="none" stroke="#75798c" stroke-width="1.5" stroke-dasharray="4 4"></polyline>
+              </svg>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-3);margin-bottom:12px">
+              <div class="card-kicker" style="margin:0">Weekly volume</div>
+              <svg viewBox="0 0 320 84" style="width:100%;height:84px">
+                <g fill="#423a6a">
+                  <rect x="0" y="46" width="20" height="38" rx="3"></rect>
+                  <rect x="27" y="40" width="20" height="44" rx="3"></rect>
+                  <rect x="54" y="52" width="20" height="32" rx="3"></rect>
+                  <rect x="81" y="34" width="20" height="50" rx="3"></rect>
+                  <rect x="108" y="30" width="20" height="54" rx="3"></rect>
+                  <rect x="135" y="44" width="20" height="40" rx="3"></rect>
+                  <rect x="162" y="24" width="20" height="60" rx="3"></rect>
+                  <rect x="189" y="18" width="20" height="66" rx="3"></rect>
+                  <rect x="216" y="36" width="20" height="48" rx="3"></rect>
+                  <rect x="243" y="14" width="20" height="70" rx="3"></rect>
+                  <rect x="270" y="10" width="20" height="74" rx="3"></rect>
+                </g>
+                <rect x="297" y="6" width="20" height="78" rx="3" fill="#9184d9"></rect>
+              </svg>
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:color-mix(in srgb, var(--color-text) 66%, transparent)"><span>12 wks ago</span><span>52 km this week</span></div>
+            </div>
+
+            <div class="card elev-sm" style="gap:var(--space-2)">
+              <div class="card-kicker" style="margin:0">Bests this block</div>
+              <sc-for list="{{ bests }}" as="b" hint-placeholder-count="3">
+                <div style="display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid color-mix(in srgb, var(--color-text) 7%, transparent)">
+                  <div style="width:52px;font-size:12px;color:color-mix(in srgb, var(--color-text) 50%, transparent)">{{ b.dist }}</div>
+                  <div style="flex:1;font-size:15px;font-variant-numeric:tabular-nums">{{ b.time }}</div>
+                  <div style="font-size:11.5px;color:var(--color-accent-300)">{{ b.delta }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+      </div>
+
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:8px 10px 26px;display:flex;align-items:center;background:linear-gradient(to top,#161826 62%,transparent);backdrop-filter:blur(8px)">
+        <button style="flex:1;background:transparent;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;font-family:inherit;color:{{ fgToday }}" onClick="{{ pickToday }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5"></circle><circle cx="12" cy="12" r="2.6"></circle></svg>
+          <span style="font-size:10.5px;letter-spacing:.03em">Today</span>
+        </button>
+        <button style="flex:1;background:transparent;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;font-family:inherit;color:{{ fgPlan }}" onClick="{{ pickPlan }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 10h17M8 3.5v3M16 3.5v3M8 14h3M8 17h6"></path></svg>
+          <span style="font-size:10.5px;letter-spacing:.03em">Plan</span>
+        </button>
+        <button style="flex:1;background:transparent;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;font-family:inherit;color:{{ fgRun }}" onClick="{{ pickRun }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6.8l9 5.2-9 5.2z"></path></svg>
+          <span style="font-size:10.5px;letter-spacing:.03em">Run</span>
+        </button>
+        <button style="flex:1;background:transparent;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;font-family:inherit;color:{{ fgCoach }}" onClick="{{ pickCoach }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 15.2a1.8 1.8 0 0 1-1.8 1.8H9.2L5 20.5V6.3a1.8 1.8 0 0 1 1.8-1.8h11.9a1.8 1.8 0 0 1 1.8 1.8z"></path><path d="M9.2 10.8h7M9.2 13.6h4"></path></svg>
+          <span style="font-size:10.5px;letter-spacing:.03em">Coach</span>
+        </button>
+        <button style="flex:1;background:transparent;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0;font-family:inherit;color:{{ fgProgress }}" onClick="{{ pickProgress }}">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19.5V13M12 19.5V7.5M19 19.5V10.5"></path></svg>
+          <span style="font-size:10.5px;letter-spacing:.03em">Progress</span>
+        </button>
+      </div>
+
+    </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:860,&quot;height&quot;:990},&quot;coachTone&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Warm&quot;,&quot;Blunt&quot;,&quot;Clinical&quot;],&quot;default&quot;:&quot;Warm&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Coach&quot;},&quot;readiness&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:40,&quot;max&quot;:99,&quot;step&quot;:1,&quot;default&quot;:78,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Coach&quot;},&quot;liveCues&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Coach&quot;}}">
+const MUTED = 'color-mix(in srgb, #e9e9ed 72%, transparent)';
+const ACCENT = '#9184d9';
+
+const NOTES = {
+  Warm: "Your legs looked ready this morning, so I kept the reps at eight minutes instead of trimming them. Start the first one two seconds slower than target — you'll finish the third one properly if you do.",
+  Blunt: "You're recovered. Eight-minute reps stay. Go out two seconds slow on rep one or you'll blow the third — you did exactly that last Thursday.",
+  Clinical: "Recovery markers within range, so interval duration is unchanged at 8 min. Recommend opening rep one at 4:37/km and settling to 4:35/km to limit third-rep decoupling.",
+};
+
+const REPLIES = [
+  [/sore|tired|heavy|ache/, "Sore quads two days after a tempo is normal adaptation, not damage. I've swapped tomorrow's 45 min easy for 35 min plus mobility, and Saturday's long run keeps its distance. If it's still there Sunday, tell me and we drop the intensity, not the volume."],
+  [/why|explain|reason/, "Because your aerobic ceiling is the limiter, not your top-end speed. Your 5K pace already predicts a 1:27 half — what's missing is holding 4:14/km for 21 km, so tempo volume does more for you right now than another interval session."],
+  [/pace|target|faster/, "Hold 4:35/km for the reps. That's 6 s/km slower than your last 10K race pace, which is the point — tempo should feel controlled at the end, not like a race."],
+  [/race|rotterdam|goal/, "You're 32 seconds ahead of the 1:29:30 curve. I'd rather bank that than chase a faster goal now — we'll revisit after the 15 km tune-up race in three weeks."],
+  [/long run|saturday|18/, "Saturday is 18 km easy at 5:25/km, no fast finish this time. You've had two quality days already; the long run's job this week is time on feet."],
+];
+
+class Component extends DCLogic {
+  state = {
+    tab: 'today', phase: 'pre', elapsed: 0, count: 3,
+    showWhy: false, adjustOpen: false, draft: '', typing: false,
+    msgs: [
+      { role: 'coach', text: "Morning. You slept well and your HRV is up — today's tempo stays as written." },
+      { role: 'me', text: 'Can I move it to tomorrow? Long day at work.' },
+      { role: 'coach', text: "Yes. I'll flip Thursday and Friday: easy 45 min today, tempo tomorrow morning. Saturday's long run shifts an hour later so you get the sleep." },
+    ],
+  };
+
+  componentDidMount() {
+    this._t = setInterval(() => {
+      const s = this.state;
+      if (s.phase === 'count') {
+        if (s.count <= 1) this.setState({ phase: 'active', count: 3 });
+        else this.setState({ count: s.count - 1 });
+      } else if (s.phase === 'active') {
+        this.setState({ elapsed: s.elapsed + 1 });
+      }
+    }, 1000);
+  }
+  componentWillUnmount() { clearInterval(this._t); }
+
+  fmt(sec) {
+    const m = Math.floor(sec / 60), s = sec % 60;
+    return m + ':' + String(s).padStart(2, '0');
+  }
+
+  seg() {
+    const e = this.state.elapsed;
+    if (e < 90) return { label: 'Warm-up', left: 90 - e, pct: (e / 90) * 100, phase: 'Warm-up · easy', hard: false };
+    const t = e - 90, cycle = 180, i = Math.min(2, Math.floor(t / cycle));
+    const inCycle = t - i * cycle;
+    if (inCycle < 120) return { label: 'Interval ' + (i + 1) + ' of 3', left: 120 - inCycle, pct: (inCycle / 120) * 100, phase: 'Interval ' + (i + 1) + ' of 3', hard: true };
+    return { label: 'Recovery ' + (i + 1), left: 60 - (inCycle - 120), pct: ((inCycle - 120) / 60) * 100, phase: 'Recovery jog', hard: false };
+  }
+
+  reply(text) {
+    const q = text.toLowerCase();
+    const hit = REPLIES.find(([re]) => re.test(q));
+    return hit ? hit[1] : "Logged. Based on the last four weeks I'd keep this week as written — your load is climbing 6% and that's the most you've absorbed cleanly so far. Ask me again after Saturday's long run.";
+  }
+
+  push(text) {
+    if (!text.trim()) return;
+    this.setState(s => ({ msgs: s.msgs.concat([{ role: 'me', text }]), draft: '', typing: true }));
+    setTimeout(() => {
+      this.setState(s => ({ typing: false, msgs: s.msgs.concat([{ role: 'coach', text: this.reply(text) }]) }));
+    }, 1100);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const readiness = this.props.readiness ?? 78;
+    const cues = this.props.liveCues ?? true;
+    const tone = this.props.coachTone ?? 'Warm';
+    const seg = this.seg();
+    const pace = 275 + Math.round(7 * Math.sin(s.elapsed / 6)) + (seg.hard ? 0 : 55);
+    const dist = s.elapsed / pace;
+    const active = s.tab === 'summary' ? 'today' : s.tab;
+
+    return {
+      readiness,
+      ringDash: (2 * Math.PI * 33 * readiness / 100).toFixed(1) + ' 999',
+      coachNote: NOTES[tone] || NOTES.Warm,
+      showWhy: s.showWhy,
+      adjustOpen: s.adjustOpen,
+      cuesLabel: cues ? 'On' : 'Off',
+      toggleWhy: () => this.setState(p => ({ showWhy: !p.showWhy })),
+      toggleAdjust: () => this.setState(p => ({ adjustOpen: !p.adjustOpen })),
+      adjustOptions: [
+        "I'm short on time — 35 min max",
+        'Legs feel flat, make it easy',
+        'Move it to tomorrow morning',
+      ].map(label => ({ label, pick: () => this.setState({ adjustOpen: false, tab: 'coach', msgs: this.state.msgs.concat([{ role: 'me', text: label }, { role: 'coach', text: this.reply(label) }]) }) })),
+
+      isToday: s.tab === 'today', isPlan: s.tab === 'plan', isCoach: s.tab === 'coach',
+      isProgress: s.tab === 'progress', isSummary: s.tab === 'summary',
+      isRunPre: s.tab === 'run' && s.phase === 'pre',
+      isCounting: s.tab === 'run' && s.phase === 'count',
+      isActive: s.tab === 'run' && s.phase === 'active',
+
+      goRun: () => this.setState({ tab: 'run', phase: 'pre' }),
+      goToday: () => this.setState({ tab: 'today' }),
+      goCoach: () => this.setState({ tab: 'coach' }),
+      goSummary: () => this.setState({ tab: 'summary' }),
+      startRun: () => this.setState({ phase: 'count', count: 3, elapsed: 0 }),
+      pauseRun: () => this.setState({ phase: 'pre' }),
+      finishRun: () => this.setState({ tab: 'summary', phase: 'pre' }),
+
+      count: s.count,
+      elapsedStr: this.fmt(s.elapsed),
+      distStr: dist.toFixed(2),
+      hr: seg.hard ? 158 + (s.elapsed % 7) : 132 + (s.elapsed % 5),
+      paceStr: this.fmt(pace),
+      targetPace: seg.hard ? '4:35' : '5:30',
+      phaseLabel: seg.phase,
+      segLabel: seg.label,
+      segLeft: this.fmt(seg.left),
+      segPct: seg.pct.toFixed(1),
+      showCue: cues && seg.hard && seg.left < 95 && seg.left > 30,
+      cueText: 'Two seconds hot — ease the shoulders and let the pace come back to you.',
+
+      week: [
+        ['Mon', 'Rest', 'done'], ['Tue', '8k', 'done'], ['Wed', '10k', 'done'],
+        ['Thu', 'T', 'today'], ['Fri', '45′', 'next'], ['Sat', '18k', 'next'], ['Sun', '6k', 'next'],
+      ].map(([day, code, st]) => ({
+        day, code,
+        bg: st === 'today' ? 'color-mix(in srgb, #9184d9 14%, transparent)' : '#232532',
+        ring: st === 'today' ? 'inset 0 0 0 1px ' + ACCENT : 'none',
+        fg: st === 'done' ? MUTED : st === 'today' ? ACCENT : '#e9e9ed',
+      })),
+
+      sessions: [
+        ['Mon', 'Rest', 'Mobility 15 min', 'Done', MUTED],
+        ['Tue', 'Easy 8 km', '5:30/km · ran 5:21', 'Hot', '#d2cefd'],
+        ['Wed', 'Recovery 10 km', 'Moved from intervals', 'Done', MUTED],
+        ['Thu', 'Tempo 3 × 8 min', '4:35/km · 11.2 km', 'Today', ACCENT],
+        ['Fri', 'Easy 45 min', '5:30/km', 'Planned', MUTED],
+        ['Sat', 'Long run 18 km', '5:25/km, no fast finish', 'Planned', MUTED],
+        ['Sun', 'Easy 6 km', 'Optional', 'Planned', MUTED],
+      ].map(([day, title, detail, status, statusFg]) => ({
+        day, title, detail, status, statusFg,
+        fg: status === 'Today' ? ACCENT : '#e9e9ed',
+      })),
+
+      steps: [
+        ['Warm-up 15 min', '5:40/km', false],
+        ['Interval 1 · 8 min', '4:35/km', true],
+        ['Float 3 min', '5:40/km', false],
+        ['Interval 2 · 8 min', '4:35/km', true],
+        ['Interval 3 · 8 min', '4:35/km', true],
+        ['Cool-down 10 min', 'easy', false],
+      ].map(([label, target, hard]) => ({
+        label, target,
+        bg: hard ? '#232532' : 'transparent',
+        mark: hard ? ACCENT : '#3f424d',
+      })),
+
+      msgs: s.msgs.map(m => ({
+        text: m.text,
+        align: m.role === 'me' ? 'flex-end' : 'flex-start',
+        bg: m.role === 'me' ? 'color-mix(in srgb, #9184d9 16%, transparent)' : '#232532',
+        ring: m.role === 'me' ? 'inset 0 0 0 1px #5d5294' : 'none',
+      })),
+      typing: s.typing,
+      draft: s.draft,
+      onDraft: e => this.setState({ draft: e.target.value }),
+      onKey: e => { if (e.key === 'Enter') this.push(this.state.draft); },
+      send: () => this.push(this.state.draft),
+      prompts: ["I'm sore today", 'Why this session?', 'Am I on track for 1:29?']
+        .map(label => ({ label, pick: () => this.push(label) })),
+
+      bests: [
+        { dist: '5 km', time: '19:44', delta: '−22s' },
+        { dist: '10 km', time: '41:08', delta: '−51s' },
+        { dist: 'Half', time: '1:31:12', delta: 'Sept' },
+      ],
+
+      fgToday: active === 'today' ? ACCENT : MUTED,
+      fgPlan: active === 'plan' ? ACCENT : MUTED,
+      fgRun: active === 'run' ? ACCENT : MUTED,
+      fgCoach: active === 'coach' ? ACCENT : MUTED,
+      fgProgress: active === 'progress' ? ACCENT : MUTED,
+      pickToday: () => this.setState({ tab: 'today' }),
+      pickPlan: () => this.setState({ tab: 'plan' }),
+      pickRun: () => this.setState({ tab: 'run', phase: 'pre' }),
+      pickCoach: () => this.setState({ tab: 'coach' }),
+      pickProgress: () => this.setState({ tab: 'progress' }),
+    };
+  }
+}
+</script>
+</body>
+</html>
