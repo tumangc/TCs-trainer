@@ -517,7 +517,7 @@ export class MockCoachService implements CoachService {
         zoneBar: [5, 4, 3, 2, 1],
         devices: [
           { name: 'Garmin Forerunner 965', state: 'Synced 07:12 · workouts push to watch', action: 'Manage', connected: true },
-          { name: 'Strava', state: 'Runs import automatically', action: 'Manage', connected: true },
+          { name: 'Strava', state: 'Not connected', action: 'Connect', connected: false },
           { name: 'Apple Health', state: 'Sleep and HRV only · not connected', action: 'Connect', connected: false },
         ],
         constraints: [

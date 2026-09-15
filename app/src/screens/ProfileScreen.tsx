@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useCoachService } from '../services/coachServiceContext';
+import { disconnectStrava, getStravaStatus, stravaConnectUrl, testStravaConnection, type StravaStatus, type StravaTestResult } from '../services/stravaClient';
 import type { ProfileData } from '../types/domain';
 
 const ZONE_COLORS = ['#3f424d', '#423a6a', '#5d5294', '#9184d9', '#d2cefd'];
@@ -7,10 +8,39 @@ const ZONE_COLORS = ['#3f424d', '#423a6a', '#5d5294', '#9184d9', '#d2cefd'];
 export function ProfileScreen({ isFull, onOpenModel, onOpenNotifs }: { isFull: boolean; onOpenModel: () => void; onOpenNotifs: () => void }) {
   const service = useCoachService();
   const [data, setData] = useState<ProfileData | null>(null);
+  const [strava, setStrava] = useState<StravaStatus>({ connected: false });
+  const [stravaTest, setStravaTest] = useState<StravaTestResult | null>(null);
+  const [stravaBusy, setStravaBusy] = useState(false);
 
   useEffect(() => {
     service.getProfile().then(setData);
   }, [service]);
+
+  useEffect(() => {
+    getStravaStatus().then(setStrava);
+
+    const params = new URLSearchParams(window.location.search);
+    const outcome = params.get('strava');
+    if (outcome) {
+      window.history.replaceState(null, '', window.location.pathname);
+      if (outcome === 'connected') getStravaStatus().then(setStrava);
+    }
+  }, []);
+
+  async function handleStravaDisconnect() {
+    setStravaBusy(true);
+    setStravaTest(null);
+    await disconnectStrava();
+    setStrava({ connected: false });
+    setStravaBusy(false);
+  }
+
+  async function handleStravaTest() {
+    setStravaBusy(true);
+    const result = await testStravaConnection();
+    setStravaTest(result);
+    setStravaBusy(false);
+  }
 
   if (!data) return <div className="screen-loading muted">Loading profile…</div>;
 
@@ -100,18 +130,77 @@ export function ProfileScreen({ isFull, onOpenModel, onOpenNotifs }: { isFull: b
         <div className="card-kicker" style={{ margin: 0 }}>
           Devices
         </div>
-        {data.devices.map((d, i) => (
-          <div key={i} className="row-rule" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0' }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: d.connected ? 'var(--color-accent)' : 'var(--color-neutral-800)', flex: 'none' }} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13 }}>{d.name}</div>
-              <div className="muted" style={{ fontSize: 11, marginTop: 2 }}>
-                {d.state}
+        {data.devices.map((d, i) => {
+          const isStrava = d.name === 'Strava';
+          const connected = isStrava ? strava.connected : d.connected;
+          const state = isStrava
+            ? strava.connected
+              ? strava.athlete?.name
+                ? `Connected as ${strava.athlete.name}`
+                : 'Connected'
+              : 'Not connected'
+            : d.state;
+
+          return (
+            <div key={i} className="row-rule" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0' }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: connected ? 'var(--color-accent)' : 'var(--color-neutral-800)', flex: 'none' }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13 }}>{d.name}</div>
+                <div className="muted" style={{ fontSize: 11, marginTop: 2 }}>
+                  {state}
+                </div>
               </div>
+              {isStrava ? (
+                <div style={{ display: 'flex', gap: 10, flex: 'none' }}>
+                  {strava.connected ? (
+                    <>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        style={{ fontSize: 11.5, color: 'var(--color-accent-300)', padding: 0 }}
+                        disabled={stravaBusy}
+                        onClick={handleStravaTest}
+                      >
+                        Test
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        style={{ fontSize: 11.5, color: 'var(--color-accent-300)', padding: 0 }}
+                        disabled={stravaBusy}
+                        onClick={handleStravaDisconnect}
+                      >
+                        Disconnect
+                      </button>
+                    </>
+                  ) : (
+                    <a href={stravaConnectUrl()} style={{ fontSize: 11.5, color: 'var(--color-accent-300)' }}>
+                      Connect
+                    </a>
+                  )}
+                </div>
+              ) : (
+                <span style={{ fontSize: 11.5, color: 'var(--color-accent-300)' }}>{d.action}</span>
+              )}
             </div>
-            <span style={{ fontSize: 11.5, color: 'var(--color-accent-300)' }}>{d.action}</span>
+          );
+        })}
+        {stravaTest && (
+          <div
+            className="muted"
+            style={{ fontSize: 11.5, lineHeight: 1.5, background: 'var(--color-accent-800)', borderRadius: 8, padding: '8px 10px' }}
+          >
+            {stravaTest.ok ? (
+              <>
+                Strava data access verified — reading as <strong>{stravaTest.athlete?.name}</strong>,{' '}
+                {stravaTest.recentActivities?.length ?? 0} recent activities pulled
+                {stravaTest.recentActivities?.[0] ? ` (latest: "${stravaTest.recentActivities[0].name}")` : ''}.
+              </>
+            ) : (
+              <>Strava test failed: {stravaTest.error === 'not_connected' ? 'not connected.' : stravaTest.message || stravaTest.error}</>
+            )}
           </div>
-        ))}
+        )}
         <div className="muted" style={{ fontSize: 11.5, lineHeight: 1.5 }}>
           TC reads whatever you connect and works without any of it — the watch records, the app decides.
         </div>
