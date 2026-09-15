@@ -1,4 +1,4 @@
-import type { Belief } from '../types/domain';
+import type { Belief, PlanData, TodayData } from '../types/domain';
 
 export interface StravaStatus {
   connected: boolean;
@@ -63,5 +63,18 @@ export interface StravaInsights {
 
 export async function getStravaInsights(): Promise<StravaInsights> {
   const res = await fetch('/api/strava/insights');
+  return res.json();
+}
+
+export type StravaTodayResult = ({ ok: true } & TodayData) | { ok: false; error: string };
+export type StravaPlanResult = ({ ok: true } & PlanData) | { ok: false; error: string };
+
+export async function getStravaToday(): Promise<StravaTodayResult> {
+  const res = await fetch('/api/strava/today');
+  return res.json();
+}
+
+export async function getStravaPlan(): Promise<StravaPlanResult> {
+  const res = await fetch('/api/strava/plan');
   return res.json();
 }

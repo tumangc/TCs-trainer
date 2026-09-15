@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import { amendPrescription, chatWithCoach } from './coach.js';
+import { buildPlan, buildToday } from './planAssembler.js';
 import { strava } from './strava.js';
 import { getUser, resetUser, updateUser } from './userStore.js';
 
@@ -128,6 +129,37 @@ app.get('/api/strava/insights', async (_req, res) => {
   try {
     const insights = await strava.computeInsightsFromActivities(creds);
     res.json({ ok: true, ...insights });
+  } catch (err) {
+    if (err.code === 'NOT_CONNECTED') {
+      return res.status(401).json({ ok: false, error: 'not_connected' });
+    }
+    console.error(err);
+    res.status(502).json({ ok: false, error: 'strava_api_error', message: err.message });
+  }
+});
+
+// GET /api/strava/today — real prescription for today, computed from Strava
+// history: threshold pace (Riegel), CTL/ATL/TSB (Banister model), ACWR, and
+// the current periodization phase all feed a rule-based session decision.
+app.get('/api/strava/today', async (_req, res) => {
+  try {
+    const result = await buildToday(creds, getUser());
+    res.json(result);
+  } catch (err) {
+    if (err.code === 'NOT_CONNECTED') {
+      return res.status(401).json({ ok: false, error: 'not_connected' });
+    }
+    console.error(err);
+    res.status(502).json({ ok: false, error: 'strava_api_error', message: err.message });
+  }
+});
+
+// GET /api/strava/plan — this week's real + generated sessions, phase bar,
+// and weekly load history, built on the same training-engine math as /today.
+app.get('/api/strava/plan', async (_req, res) => {
+  try {
+    const result = await buildPlan(creds, getUser());
+    res.json(result);
   } catch (err) {
     if (err.code === 'NOT_CONNECTED') {
       return res.status(401).json({ ok: false, error: 'not_connected' });

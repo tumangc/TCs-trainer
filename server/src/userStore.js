@@ -10,6 +10,10 @@ const USER_PATH = path.join(DATA_DIR, 'user.json');
 // no auth — whoever is running the server is "the" user.
 const DEFAULT_USER = {
   hasCompletedOnboarding: false,
+  // Set when onboarding is completed — the real anchor date periodization
+  // (Base/Build/Peak/Taper) counts forward from, so phase state (done vs
+  // current vs upcoming) reflects actual elapsed time, not a guess.
+  blockStartDate: null,
   onboarding: {
     goalKind: 'Race',
     race: 'Rotterdam Half Marathon',

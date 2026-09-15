@@ -1,5 +1,5 @@
 import { MockCoachService } from './mockCoachService';
-import { getStravaInsights, getStravaStatus } from './stravaClient';
+import { getStravaInsights, getStravaPlan, getStravaStatus, getStravaToday } from './stravaClient';
 import type {
   AmendResult,
   ChatMessage,
@@ -9,7 +9,9 @@ import type {
   OnboardingData,
   OnboardingFitness,
   OnboardingGoal,
+  PlanData,
   ProfileData,
+  TodayData,
 } from '../types/domain';
 
 function persistOnboarding(patch: Record<string, unknown>) {
@@ -104,14 +106,29 @@ export class LiveCoachService extends MockCoachService {
     await fetch('/api/user', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ hasCompletedOnboarding: true }),
+      body: JSON.stringify({ hasCompletedOnboarding: true, blockStartDate: new Date().toISOString() }),
     }).catch((err) => console.error('Failed to persist onboarding completion', err));
   }
 
-  async getToday() {
-    const data = await super.getToday();
+  async getToday(): Promise<TodayData> {
+    const fallback = await super.getToday();
+    const status = await getStravaStatus();
+    let data: TodayData = fallback;
+    if (status.connected) {
+      const live = await getStravaToday();
+      if (live.ok) data = live;
+    }
     this.todayContext = `${data.prescription.title} — ${data.prescription.subtitle}`;
     return data;
+  }
+
+  async getPlan(): Promise<PlanData> {
+    const status = await getStravaStatus();
+    if (status.connected) {
+      const live = await getStravaPlan();
+      if (live.ok) return live;
+    }
+    return super.getPlan();
   }
 
   async getChat() {
