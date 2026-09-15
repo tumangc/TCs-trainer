@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import { amendPrescription, chatWithCoach } from './coach.js';
 import { strava } from './strava.js';
+import { getUser, updateUser } from './userStore.js';
 
 const PORT = process.env.PORT || 8787;
 const APP_URL = process.env.APP_URL || 'http://localhost:5173';
@@ -19,6 +20,16 @@ if (!process.env.ANTHROPIC_API_KEY) {
 const app = express();
 app.use(express.json());
 const creds = { clientId: CLIENT_ID, clientSecret: CLIENT_SECRET };
+
+// GET /api/user — the (single) user's persisted profile and onboarding data
+app.get('/api/user', (_req, res) => {
+  res.json(getUser());
+});
+
+// PATCH /api/user — shallow-merge a patch into the persisted user, onboarding merged one level deep
+app.patch('/api/user', (req, res) => {
+  res.json(updateUser(req.body ?? {}));
+});
 
 // POST /api/coach/chat — { message, history, context } -> { reply }
 app.post('/api/coach/chat', async (req, res) => {

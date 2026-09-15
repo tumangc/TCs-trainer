@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AppShell } from './components/shell/AppShell';
 import { TodayScreen } from './screens/TodayScreen';
 import { PlanScreen } from './screens/PlanScreen';
@@ -11,13 +11,22 @@ import { ProfileScreen } from './screens/ProfileScreen';
 import { NotificationsScreen } from './screens/NotificationsScreen';
 import { CoachServiceProvider } from './services/ServiceContext';
 import { useDensity } from './hooks/useDensity';
+import { getHasCompletedOnboarding } from './services/userStatus';
 import type { MainTab, Screen } from './types/nav';
 
 function AppInner() {
-  const [onboarded, setOnboarded] = useState(false);
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const [screen, setScreen] = useState<Screen>('today');
   const [analysisId, setAnalysisId] = useState<string | null>(null);
   const { isFull, setDensity } = useDensity();
+
+  useEffect(() => {
+    getHasCompletedOnboarding().then(setOnboarded);
+  }, []);
+
+  if (onboarded === null) {
+    return <div className="screen-loading muted">Loading…</div>;
+  }
 
   if (!onboarded) {
     return (
