@@ -15,6 +15,17 @@ import type {
   TodayData,
 } from '../types/domain';
 
+async function describeCoachError(res: Response): Promise<string> {
+  try {
+    const body = await res.json();
+    if (body?.message) return body.message as string;
+    if (body?.error) return `${body.error} (HTTP ${res.status})`;
+  } catch {
+    // response wasn't JSON — fall through to the generic message
+  }
+  return `Request failed: ${res.status}`;
+}
+
 function persistOnboarding(patch: Record<string, unknown>) {
   fetch('/api/user', {
     method: 'PATCH',
@@ -153,7 +164,7 @@ export class LiveCoachService extends MockCoachService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: text, history: this.chatHistory, context: this.todayContext }),
     });
-    if (!res.ok) throw new Error(`Chat request failed: ${res.status}`);
+    if (!res.ok) throw new Error(await describeCoachError(res));
     const { reply } = await res.json();
     this.chatHistory = [...this.chatHistory, { from: 'me', text }, { from: 'tc', text: reply }];
     return { reply };
@@ -165,7 +176,7 @@ export class LiveCoachService extends MockCoachService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ freeText, context: this.todayContext }),
     });
-    if (!res.ok) throw new Error(`Amend request failed: ${res.status}`);
+    if (!res.ok) throw new Error(await describeCoachError(res));
     return res.json();
   }
 
