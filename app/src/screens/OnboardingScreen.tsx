@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useCoachService } from '../services/coachServiceContext';
+import { getStravaStatus, importFitnessFromStrava, stravaConnectUrl } from '../services/stravaClient';
 import {
   CROSS_TRAIN_OPTIONS,
   GOAL_KIND_OPTIONS,
@@ -15,10 +16,16 @@ export function OnboardingScreen({ onComplete }: { onComplete: () => void }) {
   const [data, setData] = useState<OnboardingData | null>(null);
   const [step, setStep] = useState(1);
   const [importing, setImporting] = useState(false);
+  const [stravaConnected, setStravaConnected] = useState(false);
+  const [stravaError, setStravaError] = useState('');
 
   useEffect(() => {
     service.getOnboarding().then(setData);
   }, [service]);
+
+  useEffect(() => {
+    getStravaStatus().then((s) => setStravaConnected(s.connected));
+  }, []);
 
   if (!data) return <div className="screen-loading muted">Loading onboarding…</div>;
 
@@ -56,6 +63,38 @@ export function OnboardingScreen({ onComplete }: { onComplete: () => void }) {
       setImporting(false);
       setData((d) => (d ? { ...d, fitness } : d));
     });
+  };
+  const importFromStrava = () => {
+    setImporting(true);
+    setStravaError('');
+    importFitnessFromStrava().then((result) => {
+      setImporting(false);
+      if (result.ok && result.fitness) {
+        updateFitnessField(result.fitness);
+      } else {
+        setStravaError(result.error === 'not_connected' ? 'Not connected to Strava.' : result.message || 'Could not import from Strava.');
+      }
+    });
+  };
+  const connectStrava = () => {
+    setStravaError('');
+    const popup = window.open(stravaConnectUrl(), 'strava-connect', 'width=480,height=720');
+    if (!popup) return;
+    const poll = window.setInterval(() => {
+      if (popup.closed) {
+        window.clearInterval(poll);
+        getStravaStatus().then((s) => setStravaConnected(s.connected));
+        return;
+      }
+      getStravaStatus().then((s) => {
+        if (s.connected) {
+          window.clearInterval(poll);
+          popup.close();
+          setStravaConnected(true);
+          importFromStrava();
+        }
+      });
+    }, 1200);
   };
   const next = () => {
     if (step === 4) {
@@ -217,9 +256,23 @@ export function OnboardingScreen({ onComplete }: { onComplete: () => void }) {
                 <input className="input" id="tc-yrs" value={data.fitness.yearsRunning} onChange={(e) => updateFitnessField({ yearsRunning: e.target.value })} />
               </div>
             </div>
-            <button type="button" className="btn btn-secondary" style={{ alignSelf: 'flex-start', fontSize: 12 }} onClick={importFromWatch} disabled={importing}>
-              {importing ? 'Importing…' : 'Import 18 months from my watch instead'}
-            </button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button type="button" className="btn btn-secondary" style={{ fontSize: 12 }} onClick={importFromWatch} disabled={importing}>
+                {importing ? 'Importing…' : 'Import 18 months from my watch instead'}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                style={{ fontSize: 12 }}
+                onClick={stravaConnected ? importFromStrava : connectStrava}
+                disabled={importing}
+              >
+                {importing ? 'Importing…' : stravaConnected ? 'Import from Strava' : 'Connect Strava to import'}
+              </button>
+            </div>
+            {stravaError && (
+              <div style={{ fontSize: 11.5, color: '#d2cefd' }}>{stravaError}</div>
+            )}
           </div>
 
           <div className="card elev-sm" style={{ gap: 'var(--space-2)' }}>

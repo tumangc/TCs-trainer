@@ -102,6 +102,20 @@ app.post('/api/strava/disconnect', async (_req, res) => {
   res.json({ connected: false });
 });
 
+// GET /api/strava/fitness — derives onboarding "starting fitness" fields from real activities
+app.get('/api/strava/fitness', async (_req, res) => {
+  try {
+    const fitness = await strava.computeFitnessFromActivities(creds);
+    res.json({ ok: true, fitness });
+  } catch (err) {
+    if (err.code === 'NOT_CONNECTED') {
+      return res.status(401).json({ ok: false, error: 'not_connected' });
+    }
+    console.error(err);
+    res.status(502).json({ ok: false, error: 'strava_api_error', message: err.message });
+  }
+});
+
 // GET /api/strava/test — proves the whole chain works: pulls the athlete profile
 // and their most recent activities straight from the Strava API.
 app.get('/api/strava/test', async (_req, res) => {

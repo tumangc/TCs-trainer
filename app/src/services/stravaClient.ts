@@ -37,3 +37,15 @@ export async function testStravaConnection(): Promise<StravaTestResult> {
   const body = await res.json();
   return body;
 }
+
+export interface StravaFitnessImport {
+  ok: boolean;
+  fitness?: { recentRaceDist: string; recentRaceTime: string; weeklyKm: string; yearsRunning: string };
+  error?: string;
+  message?: string;
+}
+
+export async function importFitnessFromStrava(): Promise<StravaFitnessImport> {
+  const res = await fetch('/api/strava/fitness');
+  return res.json();
+}

@@ -128,6 +128,47 @@ async function callApi(pathname, { clientId, clientSecret }, searchParams) {
   return res.json();
 }
 
+function formatDuration(totalSeconds) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = Math.round(totalSeconds % 60);
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${m}:${String(s).padStart(2, '0')}`;
+}
+
+// Pure, network-free — takes raw Strava activities and derives the same
+// shape the onboarding "fitness" step needs. Exported separately so it can
+// be unit tested without hitting the real API.
+function summarizeRunningFitness(activities) {
+  const runs = activities.filter((a) => a.type === 'Run' || a.sport_type === 'Run');
+  if (runs.length === 0) {
+    return { recentRaceDist: 'No runs found', recentRaceTime: '—', weeklyKm: '0', yearsRunning: '0' };
+  }
+
+  const now = Date.now();
+  const weekAgo = now - 7 * 24 * 3600 * 1000;
+  const weeklyMeters = runs
+    .filter((a) => new Date(a.start_date).getTime() >= weekAgo)
+    .reduce((sum, a) => sum + (a.distance || 0), 0);
+
+  const longest = runs.reduce((best, a) => (a.distance > (best?.distance ?? 0) ? a : best), runs[0]);
+
+  const oldestStart = runs.reduce((min, a) => Math.min(min, new Date(a.start_date).getTime()), now);
+  const yearsSpan = Math.max(1, Math.round((now - oldestStart) / (365.25 * 24 * 3600 * 1000)));
+  const hitPageLimit = activities.length >= 100;
+
+  return {
+    recentRaceDist: `${(longest.distance / 1000).toFixed(1)} km`,
+    recentRaceTime: formatDuration(longest.moving_time),
+    weeklyKm: String(Math.round(weeklyMeters / 1000)),
+    yearsRunning: hitPageLimit ? `${yearsSpan}+` : String(yearsSpan),
+  };
+}
+
+async function computeFitnessFromActivities(creds) {
+  const activities = await callApi('/athlete/activities', creds, { per_page: 100 });
+  return summarizeRunningFitness(activities);
+}
+
 export const strava = {
   readTokens,
   buildAuthorizeUrl,
@@ -135,4 +176,6 @@ export const strava = {
   getValidAccessToken,
   deauthorize,
   callApi,
+  summarizeRunningFitness,
+  computeFitnessFromActivities,
 };
