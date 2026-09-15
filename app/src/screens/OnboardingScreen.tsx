@@ -25,6 +25,10 @@ export function OnboardingScreen({ onComplete }: { onComplete: () => void }) {
   const setGoalKind = (kind: (typeof GOAL_KIND_OPTIONS)[number]) => {
     service.setOnboardingGoalKind(kind).then((goal) => setData((d) => (d ? { ...d, goal } : d)));
   };
+  const updateGoalField = (patch: Partial<Pick<OnboardingData['goal'], 'race' | 'date' | 'goalTime'>>) => {
+    setData((d) => (d ? { ...d, goal: { ...d.goal, ...patch } } : d));
+    service.updateOnboardingGoal(patch);
+  };
   const toggleOffDay = (day: string) => {
     const offDays = data.constraints.offDays.includes(day)
       ? data.constraints.offDays.filter((d) => d !== day)
@@ -37,6 +41,14 @@ export function OnboardingScreen({ onComplete }: { onComplete: () => void }) {
   const toggleCross = (opt: string) => {
     const cross = data.constraints.cross.includes(opt) ? data.constraints.cross.filter((c) => c !== opt) : [...data.constraints.cross, opt];
     service.updateOnboardingConstraints({ cross }).then((constraints) => setData((d) => (d ? { ...d, constraints } : d)));
+  };
+  const setRecurring = (recurring: string) => {
+    setData((d) => (d ? { ...d, constraints: { ...d.constraints, recurring } } : d));
+    service.updateOnboardingConstraints({ recurring });
+  };
+  const updateFitnessField = (patch: Partial<Pick<OnboardingData['fitness'], 'recentRaceDist' | 'recentRaceTime' | 'weeklyKm' | 'yearsRunning'>>) => {
+    setData((d) => (d ? { ...d, fitness: { ...d.fitness, ...patch } } : d));
+    service.updateOnboardingFitness(patch);
   };
   const importFromWatch = () => {
     setImporting(true);
@@ -92,16 +104,16 @@ export function OnboardingScreen({ onComplete }: { onComplete: () => void }) {
           <div className="card elev-sm" style={{ gap: 'var(--space-3)' }}>
             <div className="field">
               <label htmlFor="tc-race">Race</label>
-              <input className="input" id="tc-race" value={data.goal.race} readOnly />
+              <input className="input" id="tc-race" value={data.goal.race} onChange={(e) => updateGoalField({ race: e.target.value })} />
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
               <div className="field" style={{ flex: 1 }}>
                 <label htmlFor="tc-date">Date</label>
-                <input className="input" id="tc-date" value={data.goal.date} readOnly />
+                <input className="input" id="tc-date" value={data.goal.date} onChange={(e) => updateGoalField({ date: e.target.value })} />
               </div>
               <div className="field" style={{ flex: 1 }}>
                 <label htmlFor="tc-goal">Goal time</label>
-                <input className="input" id="tc-goal" value={data.goal.goalTime} readOnly />
+                <input className="input" id="tc-goal" value={data.goal.goalTime} onChange={(e) => updateGoalField({ goalTime: e.target.value })} />
               </div>
             </div>
             <div style={{ fontSize: 12.5, lineHeight: 1.55, color: 'color-mix(in srgb,var(--color-text) 78%,transparent)', borderTop: '1px solid var(--color-divider)', paddingTop: 9 }}>
@@ -166,7 +178,7 @@ export function OnboardingScreen({ onComplete }: { onComplete: () => void }) {
             </div>
             <div className="field">
               <label htmlFor="tc-commit">Anything recurring</label>
-              <input className="input" id="tc-commit" value={data.constraints.recurring} readOnly />
+              <input className="input" id="tc-commit" value={data.constraints.recurring} onChange={(e) => setRecurring(e.target.value)} />
             </div>
             <div style={{ fontSize: 12.5, lineHeight: 1.55, color: 'color-mix(in srgb,var(--color-text) 78%,transparent)', borderTop: '1px solid var(--color-divider)', paddingTop: 9 }}>
               {data.constraints.note}
@@ -188,21 +200,21 @@ export function OnboardingScreen({ onComplete }: { onComplete: () => void }) {
             <div style={{ display: 'flex', gap: 10 }}>
               <div className="field" style={{ flex: 1 }}>
                 <label htmlFor="tc-dist">Recent race</label>
-                <input className="input" id="tc-dist" value={data.fitness.recentRaceDist} readOnly />
+                <input className="input" id="tc-dist" value={data.fitness.recentRaceDist} onChange={(e) => updateFitnessField({ recentRaceDist: e.target.value })} />
               </div>
               <div className="field" style={{ flex: 1 }}>
                 <label htmlFor="tc-time">Time</label>
-                <input className="input" id="tc-time" value={data.fitness.recentRaceTime} readOnly />
+                <input className="input" id="tc-time" value={data.fitness.recentRaceTime} onChange={(e) => updateFitnessField({ recentRaceTime: e.target.value })} />
               </div>
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
               <div className="field" style={{ flex: 1 }}>
                 <label htmlFor="tc-vol">Weekly km now</label>
-                <input className="input" id="tc-vol" value={data.fitness.weeklyKm} readOnly />
+                <input className="input" id="tc-vol" value={data.fitness.weeklyKm} onChange={(e) => updateFitnessField({ weeklyKm: e.target.value })} />
               </div>
               <div className="field" style={{ flex: 1 }}>
                 <label htmlFor="tc-yrs">Years running</label>
-                <input className="input" id="tc-yrs" value={data.fitness.yearsRunning} readOnly />
+                <input className="input" id="tc-yrs" value={data.fitness.yearsRunning} onChange={(e) => updateFitnessField({ yearsRunning: e.target.value })} />
               </div>
             </div>
             <button type="button" className="btn btn-secondary" style={{ alignSelf: 'flex-start', fontSize: 12 }} onClick={importFromWatch} disabled={importing}>

@@ -5,6 +5,7 @@ import type {
   Belief,
   ChatData,
   ChatMessage,
+  FitnessRead,
   GoalKind,
   ModelData,
   NotificationsData,
@@ -242,13 +243,28 @@ const NOTIF_TOGGLE_DEFS: { label: string; note: string }[] = [
   { label: 'Weekly review', note: 'Sunday evening summary' },
 ];
 
+const DEFAULT_FITNESS_READS: FitnessRead[] = [
+  { label: 'Threshold pace', value: '4:47 /km', confidence: 'Low' },
+  { label: 'Sustainable weekly load', value: '≈ 310', confidence: 'Medium' },
+  { label: 'Safe ramp rate', value: '+6% /wk', confidence: 'Medium' },
+  { label: 'Predicted half today', value: '1:33:40', confidence: 'Low' },
+];
+
 export class MockCoachService implements CoachService {
   private sentToWatch = false;
   private notifToggles: Record<string, boolean> = Object.fromEntries(NOTIF_TOGGLE_DEFS.map((t) => [t.label, true]));
   private goalKind: GoalKind = 'Race';
+  private race = 'Rotterdam Half Marathon';
+  private date = '12 April 2026';
+  private goalTime = '1:29:30';
   private offDays = ['Mon'];
   private timeCap = '60 min';
   private cross = ['Strength'];
+  private recurring = 'Club session Tuesday 19:00';
+  private recentRaceDist = '10 km';
+  private recentRaceTime = '41:59';
+  private weeklyKm = '38';
+  private yearsRunning = '6';
 
   async getToday(): Promise<TodayData> {
     return delay(
@@ -397,18 +413,7 @@ export class MockCoachService implements CoachService {
       {
         goal: this.goalFor(this.goalKind),
         constraints: this.constraintsFor(this.offDays, this.timeCap, this.cross),
-        fitness: {
-          recentRaceDist: '10 km',
-          recentRaceTime: '41:59',
-          weeklyKm: '38',
-          yearsRunning: '6',
-          reads: [
-            { label: 'Threshold pace', value: '4:47 /km', confidence: 'Low' },
-            { label: 'Sustainable weekly load', value: '≈ 310', confidence: 'Medium' },
-            { label: 'Safe ramp rate', value: '+6% /wk', confidence: 'Medium' },
-            { label: 'Predicted half today', value: '1:33:40', confidence: 'Low' },
-          ],
-        },
+        fitness: this.fitnessSnapshot(),
         preview: {
           phases: [
             { label: 'Base', weeks: '1–4', fraction: 4 / 14, state: 'current' },
@@ -441,22 +446,44 @@ export class MockCoachService implements CoachService {
     return delay(this.goalFor(kind), 80);
   }
 
+  async updateOnboardingGoal(patch: Partial<Pick<OnboardingGoal, 'race' | 'date' | 'goalTime'>>): Promise<OnboardingGoal> {
+    if (patch.race !== undefined) this.race = patch.race;
+    if (patch.date !== undefined) this.date = patch.date;
+    if (patch.goalTime !== undefined) this.goalTime = patch.goalTime;
+    return delay(this.goalFor(this.goalKind), 80);
+  }
+
   async updateOnboardingConstraints(
-    patch: Partial<Pick<OnboardingConstraints, 'offDays' | 'timeCap' | 'cross'>>,
+    patch: Partial<Pick<OnboardingConstraints, 'offDays' | 'timeCap' | 'cross' | 'recurring'>>,
   ): Promise<OnboardingConstraints> {
     if (patch.offDays) this.offDays = patch.offDays;
     if (patch.timeCap) this.timeCap = patch.timeCap;
     if (patch.cross) this.cross = patch.cross;
+    if (patch.recurring !== undefined) this.recurring = patch.recurring;
     return delay(this.constraintsFor(this.offDays, this.timeCap, this.cross), 80);
   }
 
+  async updateOnboardingFitness(
+    patch: Partial<Pick<OnboardingFitness, 'recentRaceDist' | 'recentRaceTime' | 'weeklyKm' | 'yearsRunning'>>,
+  ): Promise<OnboardingFitness> {
+    if (patch.recentRaceDist !== undefined) this.recentRaceDist = patch.recentRaceDist;
+    if (patch.recentRaceTime !== undefined) this.recentRaceTime = patch.recentRaceTime;
+    if (patch.weeklyKm !== undefined) this.weeklyKm = patch.weeklyKm;
+    if (patch.yearsRunning !== undefined) this.yearsRunning = patch.yearsRunning;
+    return delay(this.fitnessSnapshot(), 80);
+  }
+
   async importFitnessFromWatch(): Promise<OnboardingFitness> {
+    this.recentRaceDist = '18 months of watch history';
+    this.recentRaceTime = 'imported';
+    this.weeklyKm = '41';
+    this.yearsRunning = '6';
     return delay(
       {
-        recentRaceDist: '18 months of watch history',
-        recentRaceTime: 'imported',
-        weeklyKm: '41',
-        yearsRunning: '6',
+        recentRaceDist: this.recentRaceDist,
+        recentRaceTime: this.recentRaceTime,
+        weeklyKm: this.weeklyKm,
+        yearsRunning: this.yearsRunning,
         reads: [
           { label: 'Threshold pace', value: '4:44 /km', confidence: 'Medium' },
           { label: 'Sustainable weekly load', value: '≈ 340', confidence: 'Medium' },
@@ -599,7 +626,7 @@ export class MockCoachService implements CoachService {
         : kind === 'Distance goal'
           ? 'No date means no taper to plan, so I will run rolling four-week cycles and hold you at the same load until you tell me otherwise.'
           : 'Then I will keep you honest rather than fast: three or four easy runs a week, one of them slightly harder, and I will not ramp you past 8% a week.';
-    return { kind, race: 'Rotterdam Half Marathon', date: '12 April 2026', goalTime: '1:29:30', note };
+    return { kind, race: this.race, date: this.date, goalTime: this.goalTime, note };
   }
 
   private constraintsFor(offDays: string[], timeCap: string, cross: string[]): OnboardingConstraints {
@@ -607,6 +634,16 @@ export class MockCoachService implements CoachService {
       offDays.length > 2
         ? `With ${offDays.length} days out I will drop to three runs a week and make each one count rather than pretend you can fit four.`
         : 'Four runs a week fits that. Your long run goes Saturday, quality Thursday, and I will keep Tuesday easy so your club session stays yours.';
-    return { offDays, timeCap, cross, recurring: 'Club session Tuesday 19:00', note };
+    return { offDays, timeCap, cross, recurring: this.recurring, note };
+  }
+
+  private fitnessSnapshot(): OnboardingFitness {
+    return {
+      recentRaceDist: this.recentRaceDist,
+      recentRaceTime: this.recentRaceTime,
+      weeklyKm: this.weeklyKm,
+      yearsRunning: this.yearsRunning,
+      reads: DEFAULT_FITNESS_READS,
+    };
   }
 }
