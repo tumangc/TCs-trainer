@@ -2,7 +2,11 @@ import Anthropic from '@anthropic-ai/sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 import { z } from 'zod/v4';
 
-const client = new Anthropic();
+// Some API keys are account-level rather than scoped to a single workspace;
+// Anthropic then requires the workspace to use named explicitly per request.
+const client = new Anthropic({
+  defaultHeaders: process.env.ANTHROPIC_WORKSPACE_ID ? { 'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID } : undefined,
+});
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-5';
 
 const SYSTEM_PROMPT = `You are TC, the AI running coach inside the TCs Trainer app. You plan and adjust a runner's training block from their own data.
