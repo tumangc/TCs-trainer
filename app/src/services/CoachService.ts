@@ -36,9 +36,13 @@ export interface CoachService {
 
   getOnboarding(): Promise<OnboardingData>;
   setOnboardingGoalKind(kind: GoalKind): Promise<OnboardingGoal>;
+  updateOnboardingGoal(patch: Partial<Pick<OnboardingGoal, 'race' | 'date' | 'goalTime'>>): Promise<OnboardingGoal>;
   updateOnboardingConstraints(
-    patch: Partial<Pick<OnboardingConstraints, 'offDays' | 'timeCap' | 'cross'>>,
+    patch: Partial<Pick<OnboardingConstraints, 'offDays' | 'timeCap' | 'cross' | 'recurring'>>,
   ): Promise<OnboardingConstraints>;
+  updateOnboardingFitness(
+    patch: Partial<Pick<OnboardingFitness, 'recentRaceDist' | 'recentRaceTime' | 'weeklyKm' | 'yearsRunning'>>,
+  ): Promise<OnboardingFitness>;
   importFitnessFromWatch(): Promise<OnboardingFitness>;
   completeOnboarding(): Promise<void>;
 

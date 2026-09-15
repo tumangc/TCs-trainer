@@ -113,6 +113,8 @@ export interface ProgressData {
     note: string;
   };
   racePrediction: {
+    /** e.g. "half", "marathon", "10K" — the goal distance, for the card heading */
+    raceLabel: string;
     current: string;
     goal: string;
     /** normalized 0-1 position of the goal line */

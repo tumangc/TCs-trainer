@@ -27,10 +27,16 @@ export function ChatScreen() {
     setLog(messages.concat([{ from: 'me', text: text.trim() }]));
     setDraft('');
     setThinking(true);
-    service.sendChatMessage(text).then(({ reply }) => {
-      setThinking(false);
-      setLog((prev) => (prev ?? messages).concat([{ from: 'tc', text: reply }]));
-    });
+    service
+      .sendChatMessage(text)
+      .then(({ reply }) => {
+        setThinking(false);
+        setLog((prev) => (prev ?? messages).concat([{ from: 'tc', text: reply }]));
+      })
+      .catch((err: Error) => {
+        setThinking(false);
+        setLog((prev) => (prev ?? messages).concat([{ from: 'tc', text: `Couldn't reach TC: ${err.message}` }]));
+      });
   };
 
   return (
