@@ -1,0 +1,415 @@
+/* App-shell and screen layout built on top of the Nocturne tokens/components
+   in nocturne.css. Nocturne supplies colors, type, spacing and the base
+   component classes (.card, .btn, .tag, .seg, .field); everything here is
+   layout glue specific to this app. */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  overscroll-behavior-y: none;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  background: var(--color-bg);
+}
+
+.app-shell {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+.app-scroll {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 58px 18px 104px;
+}
+.app-scroll::-webkit-scrollbar {
+  display: none;
+}
+.app-scroll--with-chrome {
+  padding-top: 94px;
+}
+.app-scroll--no-nav {
+  padding-bottom: 32px;
+}
+
+@keyframes tc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes tc-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.tc-rise {
+  animation: tc-rise 0.18s ease;
+}
+.tc-pulse {
+  animation: tc-pulse 1.3s infinite;
+}
+
+/* — top chrome (bell + avatar) — */
+.top-chrome {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  z-index: 5;
+}
+.chrome-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: color-mix(in srgb, var(--color-text) 72%, transparent);
+  position: relative;
+  padding: 0;
+}
+.chrome-btn:hover {
+  background: color-mix(in srgb, var(--color-text) 14%, transparent);
+}
+.chrome-dot {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+.chrome-avatar {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  color: var(--color-accent-300);
+  background: var(--color-accent-800);
+  box-shadow: 0 0 0 1px var(--color-accent-700);
+}
+.chrome-avatar--active {
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+/* — bottom nav — */
+.bottom-nav {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 10px 26px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(to top, var(--color-bg) 62%, transparent);
+  backdrop-filter: blur(8px);
+  z-index: 5;
+}
+.nav-btn {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 0;
+  font-family: inherit;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+}
+.nav-btn svg {
+  display: block;
+}
+.nav-btn span {
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+}
+.nav-btn--active {
+  color: var(--color-accent);
+}
+
+/* — shared screen header bits — */
+.eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+.screen-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin: 5px 0 16px;
+}
+.muted {
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+}
+.muted-70 {
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* — fading-rule rows (a Nocturne signature: dividers fade at both ends) — */
+.row-rule {
+  background: linear-gradient(
+      to right,
+      transparent,
+      color-mix(in srgb, var(--color-text) 8%, transparent) 20px,
+      color-mix(in srgb, var(--color-text) 8%, transparent) calc(100% - 20px),
+      transparent
+    )
+    no-repeat bottom / 100% 1px;
+}
+
+/* — density segmented control in the Today header — */
+.density-toggle {
+  display: flex;
+}
+.density-toggle button {
+  padding: 5px 9px;
+  font-size: 11px;
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+  cursor: pointer;
+}
+.density-toggle button + button {
+  border-left: 1px solid var(--color-divider);
+}
+.density-toggle button[aria-pressed='true'] {
+  color: var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+/* — chip choice row (off-days, cross-training, goal segments) — */
+.chip-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.chip {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  border: 0;
+  min-width: 34px;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: calc(var(--radius-md) * 0.75);
+  background: transparent;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+  box-shadow: 0 0 0 1px var(--color-divider);
+}
+.chip[aria-pressed='true'] {
+  background: var(--color-accent-800);
+  color: var(--color-accent-300);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+/* — TC note callout (pinned analysis notes, amend reply) — */
+.tc-note {
+  border-radius: var(--radius-md);
+  background: var(--color-accent-900);
+  box-shadow: 0 0 0 1px var(--color-accent-700);
+}
+.tc-note-label {
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent-300);
+}
+.tc-signoff {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+}
+
+/* — chart wrappers — */
+.chart-legend {
+  display: flex;
+  gap: 14px;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.chart-legend-swatch {
+  width: 14px;
+  height: 2px;
+  display: inline-block;
+}
+
+/* — phase bar (Plan block overview + Onboarding preview) — */
+.phase-bar {
+  display: flex;
+  gap: 3px;
+}
+.phase-bar-seg {
+  height: 5px;
+  border-radius: 3px;
+}
+.phase-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+}
+
+/* — sessions / list rows shared shape — */
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 2px;
+}
+.list-row-mark {
+  width: 3px;
+  height: 26px;
+  border-radius: 2px;
+  flex: none;
+}
+.list-row-day {
+  width: 26px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+}
+.list-row-main {
+  flex: 1;
+  min-width: 0;
+}
+.list-row-title {
+  font-size: 13.5px;
+}
+.list-row-detail {
+  font-size: 11.5px;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+  margin-top: 2px;
+}
+.list-row-end {
+  text-align: right;
+}
+.list-row-status {
+  font-size: 11px;
+}
+.list-row-load {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* — timeline (analysis) — */
+.timeline {
+  display: flex;
+  gap: 11px;
+}
+.timeline-rail {
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--color-accent) 8%,
+    color-mix(in srgb, var(--color-accent) 22%, transparent)
+  );
+  flex: none;
+  margin: 6px 0;
+}
+.timeline-items {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+.timeline-row {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+.timeline-at {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent-300);
+  width: 44px;
+  flex: none;
+}
+.timeline-label {
+  font-size: 13px;
+  flex: 1;
+}
+.timeline-metric {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--color-text) 66%, transparent);
+}
+.timeline-note {
+  margin: 7px 0 0 53px;
+  padding: 8px 10px;
+}
+
+/* — onboarding — */
+.onboarding-dots {
+  display: flex;
+  gap: 4px;
+}
+.onboarding-dot {
+  width: 22px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-neutral-800);
+}
+.onboarding-dot--done {
+  background: var(--color-accent);
+}
+.onboarding-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.onboarding-footer .btn-primary {
+  flex: 1;
+}
+
+/* — full-page centered loading/placeholder state — */
+.screen-loading,
+.screen-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 8px;
+}
