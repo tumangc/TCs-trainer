@@ -1,3 +1,5 @@
+import type { Belief } from '../types/domain';
+
 export interface StravaStatus {
   connected: boolean;
   athlete?: { id: number; name: string } | null;
@@ -47,5 +49,19 @@ export interface StravaFitnessImport {
 
 export async function importFitnessFromStrava(): Promise<StravaFitnessImport> {
   const res = await fetch('/api/strava/fitness');
+  return res.json();
+}
+
+export interface StravaInsights {
+  ok: boolean;
+  beliefs?: Belief[];
+  thresholdPace?: string | null;
+  maxHr?: number | null;
+  error?: string;
+  message?: string;
+}
+
+export async function getStravaInsights(): Promise<StravaInsights> {
+  const res = await fetch('/api/strava/insights');
   return res.json();
 }

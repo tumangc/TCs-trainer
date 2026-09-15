@@ -116,6 +116,21 @@ app.get('/api/strava/fitness', async (_req, res) => {
   }
 });
 
+// GET /api/strava/insights — real beliefs (threshold pace, weekly load, easy-day
+// discipline) plus threshold pace / max HR, all derived from actual activities
+app.get('/api/strava/insights', async (_req, res) => {
+  try {
+    const insights = await strava.computeInsightsFromActivities(creds);
+    res.json({ ok: true, ...insights });
+  } catch (err) {
+    if (err.code === 'NOT_CONNECTED') {
+      return res.status(401).json({ ok: false, error: 'not_connected' });
+    }
+    console.error(err);
+    res.status(502).json({ ok: false, error: 'strava_api_error', message: err.message });
+  }
+});
+
 // GET /api/strava/test — proves the whole chain works: pulls the athlete profile
 // and their most recent activities straight from the Strava API.
 app.get('/api/strava/test', async (_req, res) => {

@@ -1,12 +1,15 @@
 import { MockCoachService } from './mockCoachService';
+import { getStravaInsights, getStravaStatus } from './stravaClient';
 import type {
   AmendResult,
   ChatMessage,
   GoalKind,
+  ModelData,
   OnboardingConstraints,
   OnboardingData,
   OnboardingFitness,
   OnboardingGoal,
+  ProfileData,
 } from '../types/domain';
 
 function persistOnboarding(patch: Record<string, unknown>) {
@@ -137,5 +140,39 @@ export class LiveCoachService extends MockCoachService {
     });
     if (!res.ok) throw new Error(`Amend request failed: ${res.status}`);
     return res.json();
+  }
+
+  async getModel(): Promise<ModelData> {
+    const fallback = await super.getModel();
+    const status = await getStravaStatus();
+    if (!status.connected) return fallback;
+
+    const insights = await getStravaInsights();
+    if (!insights.ok || !insights.beliefs) return fallback;
+
+    return {
+      intro: "Every belief below is inferred from your connected Strava data — not the illustrative defaults. Tap one to see what it's built from.",
+      beliefs: insights.beliefs,
+    };
+  }
+
+  async getProfile(): Promise<ProfileData> {
+    const data = await super.getProfile();
+    const status = await getStravaStatus();
+    if (!status.connected) return data;
+
+    const insights = await getStravaInsights();
+    if (!insights.ok) return data;
+
+    const thresholds = data.thresholds.map((t) => {
+      if (t.label === 'Threshold pace' && insights.thresholdPace) {
+        return { ...t, value: insights.thresholdPace, source: 'Strava' };
+      }
+      if (t.label === 'Max HR seen' && insights.maxHr) {
+        return { ...t, value: `${insights.maxHr} bpm`, source: 'Strava' };
+      }
+      return t;
+    });
+    return { ...data, thresholds };
   }
 }
